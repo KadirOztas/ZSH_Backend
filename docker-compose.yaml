@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  mysql-ZSH:
+    container_name: mysql-ZSH
+    image: mysql
+    ports:
+      - 23306:3306
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_PASSWORD=admin_123456789_0
+      - MYSQL_USER=ZSH
+      - MYSQL_DATABASE=ZSH
+    volumes:
+      - ./mysqlDB:/var/lib/meinsql/data
+  phpmyadmin-ZSH:
+    image: phpmyadmin/phpmyadmin
+    container_name: pma-ZSH
+    depends_on:
+      - mysql-ZSH
+    environment:
+      PMA_HOST: mysql-ZSH
+    restart: always
+    ports:
+      - 28080:80
