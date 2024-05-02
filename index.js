@@ -28,7 +28,8 @@ app.use('/files', fileRouter);
 
 import {router as userRouter} from './router/user.router.js';
 app.use('/users', userRouter);
-
+import { router as volunteerRouter } from "./router/roles.router.js";
+app.use("/volunteer-availability", volunteerRouter);
 import {router as authRouter} from './router/auth.router.js';
 import logger from './config/log.config.js';
 app.use('/auth', authRouter);

@@ -2,7 +2,6 @@ import express  from "express";
 import authService from "../service/auth.service.js";
 import {verifyToken} from "../utility/auth.utility.js";
 import logger from "../config/log.config.js";
-
 const router = express.Router();
 
 router.post('/register', async (req, res, next) => {
@@ -25,5 +24,5 @@ router.post('/logout', verifyToken, (req, res) => {
     req.session = null;
     res.send('logout successfull');
 });
-
+router.post("/login-admin", authService.loginAdmin);
 export {router}
