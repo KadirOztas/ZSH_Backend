@@ -1,15 +1,22 @@
-import {User} from "../model/user.model.js";
-
+import { User } from "../model/user.model.js";
+import { Volunteer } from "../model/volunteer.model.js";
 import jwt from "jsonwebtoken";
 
 import config from "../config/auth.config.js";
 import logger from "../config/log.config.js";
 import sendEmail from "./email.service.js";
-import { generateToken } from "../utility/auth.utility.js";
-const register = async ({ email, firstname, lastname, password }) => {
+import { generateToken } from "../utility/auth.utility.js"
+const register = async ({ email, firstname, lastname, password, kanton }) => {
 	logger.info(`Registering user... in service ${email}`);
 	try {
-		const user = await User.create({ email, firstname, lastname, password });
+		const user = await User.create({
+			email,
+			firstname,
+			lastname,
+			password,
+			role: "user",
+			kanton,
+		});
 		logger.info(`User is registered ${email}`);
 
 		await sendEmail({
@@ -27,23 +34,29 @@ const register = async ({ email, firstname, lastname, password }) => {
 };
 
 
+
 const login = async (email, password) => {
-    const user =
-        await User.findOne({where: {email, password}});
-    if(user == null) {
-        throw new Error('User not found');
-    }
+	let user = await User.findOne({
+		where: { email: email, password: password },
+	});
 
-    const token = jwt.sign({ id: user.id },
-        config.secret,
-        {
-            algorithm: 'HS256',
-            allowInsecureKeySizes: true,
-            expiresIn: 86400, // 24 hours
-        });
+	if (!user) {
+		user = await Volunteer.findOne({
+			where: { email: email, password: password },
+		});
+	}
 
-    return token;
-}
+	if (!user) {
+		throw new Error("User not found");
+	}
+
+	const token = jwt.sign({ id: user.id }, config.secret, {
+		algorithm: "HS256",
+		expiresIn: 86400, // 24 hours
+	});
+
+	return { user, token };
+};
 
 const logout = (req, res) => {
 	res.cookie("accessToken", "", { maxAge: 0, httpOnly: true });
@@ -52,7 +65,10 @@ const logout = (req, res) => {
 const loginAdmin = async (req, res) => {
 	const { email, password } = req.body;
 
-	if (email === "admin@example.com" && password === process.env.FE_PASSWORD) {
+	const adminEmail = "admin@example.com";
+	const adminPassword = process.env.FE_PASSWORD;
+
+	if (email === adminEmail && password === adminPassword) {
 		const user = {
 			id: "admin",
 			username: "admin@example.com",
@@ -70,12 +86,11 @@ const loginAdmin = async (req, res) => {
 			maxAge: 86400 * 1000,
 		});
 
-		res.json({ message: "Login successful", accessToken: token });
+		res.json({ message: "Admin login successful", accessToken: token });
 	} else {
-		res.status(401).send({ message: "Username or password is incorrect" });
+		res.status(401).send({ message: "Invalid credentials" });
 	}
 };
-
 
 
 export default { register, login, loginAdmin, logout };

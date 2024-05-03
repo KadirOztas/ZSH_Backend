@@ -1,21 +1,25 @@
 import sequelize from "../config/database.config.js";
 import { DataTypes } from "sequelize";
 
-const User = sequelize.define(
-	"User",
+const Volunteer = sequelize.define(
+	"Volunteer",
 	{
 		firstname: {
 			type: DataTypes.STRING,
 			allowNull: false,
-			notEmpty: {
-				msg: "First Name is required",
+			validate: {
+				notEmpty: {
+					msg: "First Name is required",
+				},
 			},
 		},
 		lastname: {
 			type: DataTypes.STRING,
 			allowNull: false,
-			notEmpty: {
-				msg: "Last Name is required",
+			validate: {
+				notEmpty: {
+					msg: "Last Name is required",
+				},
 			},
 		},
 		email: {
@@ -31,25 +35,34 @@ const User = sequelize.define(
 		password: {
 			type: DataTypes.STRING,
 			allowNull: false,
-			notEmpty: {
-				msg: "Password is required",
+			validate: {
+				notEmpty: {
+					msg: "Password is required",
+				},
 			},
 		},
 		role: {
 			type: DataTypes.ENUM,
-			values: ["user", "admin", "volunteer"],
+			values: ["volunteer"],
 			allowNull: false,
-			defaultValue: "user",
+			defaultValue: "volunteer",
 		},
-
 		kanton: {
 			type: DataTypes.STRING,
 			allowNull: false,
 		},
+		phone: {
+			type: DataTypes.STRING,
+			allowNull: false,
+		},
+		isAvailable: {
+			type: DataTypes.BOOLEAN,
+			defaultValue: false,
+		},
 	},
 	{
-		tableName: "users",
+		tableName: "volunteers",
 	}
 );
 
-export { User };
+export { Volunteer };

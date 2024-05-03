@@ -25,7 +25,7 @@ const Email = sequelize.define(
 		},
 	},
 	{
-		tableName: "email",
+		tableName: "emails",
 	}
 );
 export { Email };
