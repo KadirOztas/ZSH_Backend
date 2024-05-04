@@ -2,23 +2,28 @@ import './loadEnv.js';
 
 import express from 'express';
 import cors from 'cors';
-import cookieSession from 'cookie-session';
+// import cookieSession from 'cookie-session';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 const app = express();
-
-app.use(morgan(process.env.ACCESS_LOG_FORMAT))
-app.use(cors());
 app.use(
+	cors({
+		origin: "http://localhost:3000",
+		credentials: true,
+	})
+);
+app.use(morgan(process.env.ACCESS_LOG_FORMAT))
+
+/* app.use(
     cookieSession({
         name: process.env.COOKIE_SESSION_NAME,
         secret: process.env.COOKIE_SECRET,
-        httpOnly: true
     })
-);
+); */
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser())
+
 
 import {router as employeeRouter} from './router/employee.router.js';
 app.use('/employees', employeeRouter);

@@ -12,12 +12,15 @@ router.post('/register', async (req, res, next) => {
     res.send('Register');
 })
 
-router.post('/login',async (req, res) => {
-    const {email, password} = req.body;
-    const token  = await authService.login(email, password);
-
-    req.session.token = token;
-    res.send('login successfull');
+router.post("/login", async (req, res) => {
+	const { email, password } = req.body;
+	try {
+		const result = await authService.login(email, password, res);
+		res.send("login successful");
+	} catch (error) {
+		logger.error("Login error: ", error.message);
+		res.status(500).send("Login failed");
+	}
 });
 
 router.post('/logout', verifyToken, (req, res) => {

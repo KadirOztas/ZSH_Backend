@@ -5,7 +5,8 @@ import jwt from "jsonwebtoken";
 import config from "../config/auth.config.js";
 import logger from "../config/log.config.js";
 import sendEmail from "./email.service.js";
-import { generateToken } from "../utility/auth.utility.js"
+import { generateToken } from "../utility/auth.utility.js";
+import { response } from "express";
 const register = async ({ email, firstname, lastname, password, kanton }) => {
 	logger.info(`Registering user... in service ${email}`);
 	try {
@@ -35,9 +36,7 @@ const register = async ({ email, firstname, lastname, password, kanton }) => {
 	}
 };
 
-
-
-const login = async (email, password) => {
+const login = async (email, password, res) => {
 	let user = await User.findOne({
 		where: { email: email, password: password },
 	});
@@ -55,10 +54,10 @@ const login = async (email, password) => {
 	const token = generateToken(user);
 	res.cookie("accessToken", token, {
 		maxAge: 86400 * 1000,
+		secure:process.env.NODE_ENV==="production"
 	});
-	return { user, token };
+	res.status(200).json({token, user})
 };
-
 
 const logout = (req, res) => {
 	if (req.session) {
@@ -97,7 +96,5 @@ const loginAdmin = async (req, res) => {
 		res.status(401).send({ message: "Invalid credentials" });
 	}
 };
-
-
 
 export default { register, login, loginAdmin, logout };
