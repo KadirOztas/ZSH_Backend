@@ -15,17 +15,13 @@ router.post('/register', async (req, res, next) => {
 router.post("/login", async (req, res) => {
 	const { email, password } = req.body;
 	try {
-		const result = await authService.login(email, password, res);
-		res.send("login successful");
+		await authService.login(email, password, res);
 	} catch (error) {
-		logger.error("Login error: ", error.message);
-		res.status(500).send("Login failed");
+		logger.error("Login error caught in router: ", error.message);
 	}
 });
 
-router.post('/logout', verifyToken, (req, res) => {
-    req.session = null;
-    res.send('logout successfull');
-});
+
+router.post('/logout', verifyToken, authService.logout);
 router.post("/login-admin", authService.loginAdmin);
 export {router}

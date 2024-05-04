@@ -37,39 +37,44 @@ const register = async ({ email, firstname, lastname, password, kanton }) => {
 };
 
 const login = async (email, password, res) => {
-	let user = await User.findOne({
-		where: { email: email, password: password },
-	});
-
-	if (!user) {
-		user = await Volunteer.findOne({
+	try {
+		let user = await User.findOne({
 			where: { email: email, password: password },
 		});
-	}
 
-	if (!user) {
-		throw new Error("User not found");
-	}
+		if (!user) {
+			user = await Volunteer.findOne({
+				where: { email: email, password: password },
+			});
+		}
 
-	const token = generateToken(user);
-	res.cookie("accessToken", token, {
-		maxAge: 86400 * 1000,
-		secure:process.env.NODE_ENV==="production"
-	});
-	res.status(200).json({token, user})
+		if (!user) {
+			throw new Error("User not found");
+		}
+
+		const token = generateToken(user);
+		res.cookie("accessToken", token, {
+			maxAge: 86400 * 1000,
+			secure: process.env.NODE_ENV === "production",
+		});
+		res.status(200).json({ token, user });
+	} catch (error) {
+		console.error("Login error: ", error);
+		if (!res.headersSent) {
+			res
+				.status(500)
+				.json({ message: "Internal Server Error", error: error.message });
+		}
+	}
 };
 
-const logout = (req, res) => {
-	if (req.session) {
-		req.session.destroy((err) => {
-			if (err) {
-				return res.status(500).send({ message: "Failed to logout." });
-			}
-			res.clearCookie("accessToken");
-			res.send("Logout successful");
-		});
-	} else {
-		res.send("No session to logout from.");
+
+const logout = async (req, res, next) => {
+	try {
+		res.clearCookie("accessToken");
+		res.send("Logout successful");
+	} catch (error) {
+		next(error)
 	}
 };
 
