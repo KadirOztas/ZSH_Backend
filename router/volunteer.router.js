@@ -1,5 +1,4 @@
 import express from "express";
-import { Volunteer } from "../model/volunteer.model.js";
 import { verifyToken } from "../utility/auth.utility.js";
 import VolunteerService from "../service/volunteer.service.js";
 
@@ -46,10 +45,49 @@ router.put("/:id", verifyToken, async (req, res) => {
 	const id = req.params.id;
 	const data = req.body;
 	try {
-		const updatedVolunteer = await VolunteerService.updateVolunteer(id, data);
-		res.json(updatedVolunteer);
+		const volunteer = await VolunteerService.updateVolunteer(id, data);
+		res.json(volunteer);
 	} catch (error) {
-		res.status(404).json({ error: error.message });
+		res.status(500).json({ error: error.message });
+	}
+});
+router.put("/:id/availability", verifyToken, async (req, res) => {
+	const userId = req.user.id; // Kullanıcının ID'si, JWT token'dan alınır
+	const volunteerId = req.params.id;
+	const { isAvailable } = req.body;
+
+	if (userId.toString() !== volunteerId) {
+		return res
+			.status(403)
+			.json({ message: "Unauthorized to change this data" });
+	}
+
+	try {
+		const volunteer = await VolunteerService.updateVolunteerAvailability(
+			volunteerId,
+			isAvailable
+		);
+		res.json(volunteer);
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+});
+router.get("/:id/availability", verifyToken, async (req, res) => {
+	const userId = req.user.id;
+	const volunteerId = req.params.id;
+
+	try {
+		const volunteer = await VolunteerService.getVolunteerById(id);
+
+		if (userId.toString() !== volunteerId) {
+			return res
+				.status(403)
+				.json({ message: "Unauthorized to view this data" });
+		}
+
+		res.json({ isAvailable: volunteer.isAvailable });
+	} catch (error) {
+		res.status(500).json({ error: error.message });
 	}
 });
 

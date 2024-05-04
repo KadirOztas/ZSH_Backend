@@ -53,7 +53,20 @@ const VolunteerService = {
 			throw new Error("Error while updating volunteer: " + error.message);
 		}
 	},
-
+	async updateVolunteerAvailability(id, isAvailable) {
+		try {
+			const volunteer = await Volunteer.findByPk(id);
+			if (!volunteer) {
+				throw new Error("Volunteer not found");
+			}
+			await volunteer.update({ isAvailable });
+			return volunteer;
+		} catch (error) {
+			throw new Error(
+				"Error updating volunteer availability: " + error.message
+			);
+		}
+	},
 	async deleteVolunteer(id) {
 		try {
 			const volunteer = await Volunteer.findByPk(id);
