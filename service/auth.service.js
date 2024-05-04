@@ -17,15 +17,17 @@ const register = async ({ email, firstname, lastname, password, kanton }) => {
 			role: "user",
 			kanton,
 		});
-		logger.info(`User is registered ${email}`);
+
+		const token = generateToken(user);
 
 		await sendEmail({
-			from: "m.abdulkadiroztas@gmail.com",
+			from: "email@example.com",
 			to: email,
 			subject: "Welcome to Our Platform!",
-			message: "Thank you for registering.",
+			message: `Thank you for registering. Your token: ${token}`,
 		});
 
+		logger.info(`User is registered ${email}`);
 		return user;
 	} catch (error) {
 		logger.error(`Error creating user... ${error.message}`);
@@ -50,39 +52,43 @@ const login = async (email, password) => {
 		throw new Error("User not found");
 	}
 
-	const token = jwt.sign({ id: user.id }, config.secret, {
-		algorithm: "HS256",
-		expiresIn: 86400, // 24 hours
+	const token = generateToken(user);
+	res.cookie("accessToken", token, {
+		maxAge: 86400 * 1000,
 	});
-
 	return { user, token };
 };
 
+
 const logout = (req, res) => {
-	res.cookie("accessToken", "", { maxAge: 0, httpOnly: true });
-	res.send("Logout successful");
+	if (req.session) {
+		req.session.destroy((err) => {
+			if (err) {
+				return res.status(500).send({ message: "Failed to logout." });
+			}
+			res.clearCookie("accessToken");
+			res.send("Logout successful");
+		});
+	} else {
+		res.send("No session to logout from.");
+	}
 };
+
 const loginAdmin = async (req, res) => {
 	const { email, password } = req.body;
-
 	const adminEmail = "admin@example.com";
 	const adminPassword = process.env.FE_PASSWORD;
 
 	if (email === adminEmail && password === adminPassword) {
 		const user = {
 			id: "admin",
-			username: "admin@example.com",
+			email: "admin@example.com",
 			role: "admin",
 		};
 
-		const token = jwt.sign(
-			{ id: user.id, role: user.role, username: user.username },
-			config.secret,
-			{ expiresIn: "24h" }
-		);
+		const token = generateToken(user);
 
 		res.cookie("accessToken", token, {
-			httpOnly: true,
 			maxAge: 86400 * 1000,
 		});
 
@@ -91,6 +97,7 @@ const loginAdmin = async (req, res) => {
 		res.status(401).send({ message: "Invalid credentials" });
 	}
 };
+
 
 
 export default { register, login, loginAdmin, logout };

@@ -5,40 +5,38 @@ import logger from "../config/log.config.js";
 
 
 const generateToken = (user) => {
-	return jwt.sign(
-		{ id: user.id, role: user.role, username: user.username },
-		config.secret,
-		{ expiresIn: "24h" }
-	);
+	const payload = {
+		id: user.id,
+		role: user.role,
+		username: user.username,
+		email: user.email,
+	};
+
+	const expiresIn = user.role === "admin" ? "48h" : "24h";
+
+	return jwt.sign(payload, config.secret, { expiresIn });
 };
 
 const verifyToken = (req, res, next) => {
-	let token = req.headers.authorization?.split(" ")[1] || req.session.token;
+	const token = req.cookies?.accessToken
+
 	if (!token) {
 		logger.error("No token provided!");
-		return res.status(401).send({
-			message: "No token provided!",
-		});
+		return res.status(401).send({ message: "No token provided!" });
 	}
 
 	jwt.verify(token, config.secret, (err, decoded) => {
 		if (err) {
 			logger.error("Unauthorized!");
-			return res.status(401).send({
-				message: "Unauthorized!",
-			});
+			return res.status(401).send({ message: "Unauthorized!" });
 		}
 
-		if (decoded.id === "admin") {
-			req.user = { id: "admin", role: "admin", username: "admin@example.com" };
-		} else {
-			req.user = decoded;
-		}
-
+		req.user = decoded;
 		logger.info("User is authorized", req.user.username);
 		next();
 	});
 };
+
 
 
 
