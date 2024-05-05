@@ -1,10 +1,15 @@
 import './loadEnv.js';
-
+import path from "path"
 import express from 'express';
 import cors from 'cors';
 // import cookieSession from 'cookie-session';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 app.use(
 	cors({
@@ -30,6 +35,7 @@ app.use('/employees', employeeRouter);
 
 import { router as fileRouter } from "./router/file.router.js"
 app.use("/files", fileRouter)
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 import {router as userRouter} from './router/user.router.js';
 app.use('/users', userRouter);
 import { router as volunteerRouter } from "./router/volunteer.router.js"
