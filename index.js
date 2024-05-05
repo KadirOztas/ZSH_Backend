@@ -28,9 +28,8 @@ app.use(cookieParser())
 import {router as employeeRouter} from './router/employee.router.js';
 app.use('/employees', employeeRouter);
 
-import {router as fileRouter} from './router/file.router.js';
-app.use('/files', fileRouter);
-
+import { router as fileRouter } from "./router/file.router.js"
+app.use("/files", fileRouter)
 import {router as userRouter} from './router/user.router.js';
 app.use('/users', userRouter);
 import { router as volunteerRouter } from "./router/volunteer.router.js"
