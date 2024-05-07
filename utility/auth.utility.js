@@ -12,7 +12,7 @@ const generateToken = (user) => {
 		email: user.email,
 	};
 
-	const expiresIn = user.role === "admin" ? "48h" : "24h";
+	const expiresIn = user.role === "admin" ? "48h" : "3h";
 
 	return jwt.sign(payload, config.secret, { expiresIn });
 };
