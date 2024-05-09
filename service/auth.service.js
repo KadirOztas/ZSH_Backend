@@ -54,7 +54,7 @@ const login = async (email, password, res) => {
 
 		const token = generateToken(user);
 		res.cookie("accessToken", token, {
-			maxAge: 86400 * 1000,
+			maxAge: 3 * 60 * 60 * 1000,
 			secure: process.env.NODE_ENV === "production",
 		});
 		res.status(200).json({ token, user });
@@ -71,7 +71,9 @@ const login = async (email, password, res) => {
 
 const logout = async (req, res, next) => {
 	try {
-		res.clearCookie("accessToken");
+		res.clearCookie("accessToken", {
+			secure: process.env.NODE_ENV === "production",
+		});
 		res.send("Logout successful");
 	} catch (error) {
 		next(error)

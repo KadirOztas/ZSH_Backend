@@ -10,13 +10,19 @@ const VolunteerService = {
 			throw new Error("Error while fetching volunteers: " + error.message);
 		}
 	},
-	async getVolunteersByKanton(kanton) {
+	async getVolunteersByKanton(kanton, lang = "en") {
 		try {
-			const volunteers = await Volunteer.findAll({ where: { kanton: kanton } });
+			const volunteers = await Volunteer.findAll({
+				where: {
+					kanton: kanton,
+					language: lang,
+				},
+			});
 			return volunteers;
 		} catch (error) {
 			throw new Error(
-				"Error while fetching volunteers by kanton: " + error.message
+				"Error while fetching volunteers by kanton and language: " +
+					error.message
 			);
 		}
 	},

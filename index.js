@@ -18,13 +18,6 @@ app.use(
 	})
 );
 app.use(morgan(process.env.ACCESS_LOG_FORMAT))
-
-/* app.use(
-    cookieSession({
-        name: process.env.COOKIE_SESSION_NAME,
-        secret: process.env.COOKIE_SECRET,
-    })
-); */
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser())

@@ -59,6 +59,11 @@ const Volunteer = sequelize.define(
 			type: DataTypes.BOOLEAN,
 			defaultValue: false,
 		},
+		language: {
+			type: DataTypes.STRING,
+			allowNull: true,
+			defaultValue: "en",
+		},
 	},
 	{
 		tableName: "volunteers",

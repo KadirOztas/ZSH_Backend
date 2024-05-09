@@ -4,7 +4,7 @@ import VolunteerService from "../service/volunteer.service.js";
 
 const router = express.Router();
 
-router.get("/", verifyToken, async (req, res) => {
+router.get("/",verifyToken, async (req, res) => {
 	try {
 		const volunteers = await VolunteerService.getAllVolunteers();
 		res.json(volunteers);
@@ -12,16 +12,20 @@ router.get("/", verifyToken, async (req, res) => {
 		res.status(500).json({ error: error.message });
 	}
 });
-router.get("/:kanton",verifyToken, async (req, res) => {
+router.get("/:kanton", async (req, res) => {
 	const kanton = req.params.kanton;
+	const lang = req.query.lang || "en";
 	try {
-		const volunteers = await VolunteerService.getVolunteersByKanton(kanton);
+		const volunteers = await VolunteerService.getVolunteersByKanton(
+			kanton,
+			lang
+		);
 		res.json(volunteers);
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}
 });
-router.get("/:id", verifyToken, async (req, res) => {
+router.get("/:id",verifyToken, async (req, res) => {
 	const id = req.params.id;
 	try {
 		const volunteer = await VolunteerService.getVolunteerById(id);
@@ -52,7 +56,7 @@ router.put("/:id", verifyToken, async (req, res) => {
 	}
 });
 router.put("/:id/availability", verifyToken, async (req, res) => {
-	const userId = req.user.id; // Kullanıcının ID'si, JWT token'dan alınır
+	const userId = req.user.id;
 	const volunteerId = req.params.id;
 	const { isAvailable } = req.body;
 
