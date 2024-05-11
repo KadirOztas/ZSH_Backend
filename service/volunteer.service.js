@@ -10,22 +10,20 @@ const VolunteerService = {
 			throw new Error("Error while fetching volunteers: " + error.message);
 		}
 	},
-	async getVolunteersByKanton(kanton, lang = "en") {
-		try {
-			const volunteers = await Volunteer.findAll({
-				where: {
-					kanton: kanton,
-					language: lang,
-				},
-			});
-			return volunteers;
-		} catch (error) {
-			throw new Error(
-				"Error while fetching volunteers by kanton and language: " +
-					error.message
-			);
-		}
-	},
+	async getVolunteersByKanton(kanton) {
+    try {
+        console.log("Fetching volunteers for kanton: ", kanton);
+        const volunteers = await Volunteer.findAll({
+            where: { kanton: kanton },
+        });
+        console.log("Found volunteers: ", volunteers); 
+        return volunteers;
+    } catch (error) {
+        console.error("Error while fetching volunteers by kanton: ", error.message);
+        throw new Error("Error while fetching volunteers by kanton: " + error.message);
+    }
+},
+
 	async createVolunteer(data) {
 		try {
 			const volunteer = await Volunteer.create(data);
@@ -101,6 +99,7 @@ const populateVolunteers = async () => {
 					kanton: kanton,
 					phone: volunteerData.phone,
 					isAvailable: volunteerData.isAvailable,
+					language:volunteerData.language
 				});
 			}
 		}

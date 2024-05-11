@@ -8,7 +8,7 @@ router.get("/", verifyToken, async (req, res) => {
 	res.send(await User.findAll());
 });
 
-router.get("/:id", verifyToken, async (req, res) => {
+router.get("/:id", async (req, res) => {
 	res.send(await User.findByPk(req.params.id));
 });
 

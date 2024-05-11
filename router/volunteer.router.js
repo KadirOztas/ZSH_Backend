@@ -12,26 +12,28 @@ router.get("/",verifyToken, async (req, res) => {
 		res.status(500).json({ error: error.message });
 	}
 });
-router.get("/:kanton", async (req, res) => {
+router.get("/kanton/:kanton", async (req, res) => {
 	const kanton = req.params.kanton;
-	const lang = req.query.lang || "en";
 	try {
-		const volunteers = await VolunteerService.getVolunteersByKanton(
-			kanton,
-			lang
-		);
+		const volunteers = await VolunteerService.getVolunteersByKanton(kanton);
 		res.json(volunteers);
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}
 });
-router.get("/:id",verifyToken, async (req, res) => {
+
+router.get("/id/:id", verifyToken, async (req, res) => {
 	const id = req.params.id;
 	try {
 		const volunteer = await VolunteerService.getVolunteerById(id);
+		if (!volunteer) {
+			return res.status(404).json({ message: "Volunteer not found" });
+		}
 		res.json(volunteer);
 	} catch (error) {
-		res.status(404).json({ error: error.message });
+		res
+			.status(500)
+			.json({ message: "Internal server error", error: error.message });
 	}
 });
 
