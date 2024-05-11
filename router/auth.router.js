@@ -4,13 +4,19 @@ import {verifyToken} from "../utility/auth.utility.js";
 import logger from "../config/log.config.js";
 const router = express.Router();
 
-router.post('/register', async (req, res, next) => {
-    logger.info('Registering user...', req.body.email);
-    const user = req.body;
-    await authService.register(user);
-    logger.info('User has registered successfully', req.body.email);
-    res.send('Register');
-})
+router.post("/register", async (req, res, next) => {
+	 console.log(req.body);
+	logger.info("Registering user...", req.body.email);
+	const user = req.body;
+	try {
+		await authService.register(user);
+		logger.info("User has registered successfully", req.body.email);
+		res.send("Register");
+	} catch (error) {
+		logger.error("Error registering user", error);
+		next(error);
+	}
+});
 
 router.post("/login", async (req, res) => {
 	const { email, password } = req.body;

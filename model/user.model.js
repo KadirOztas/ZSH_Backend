@@ -48,8 +48,7 @@ const User = sequelize.define(
 		},
 		language: {
 			type: DataTypes.STRING,
-			allowNull: true,
-			defaultValue: "en",
+			allowNull: false,
 		},
 	},
 	{

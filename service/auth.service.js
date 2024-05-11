@@ -7,7 +7,7 @@ import logger from "../config/log.config.js";
 import sendEmail from "./email.service.js";
 import { generateToken } from "../utility/auth.utility.js";
 import { response } from "express";
-const register = async ({ email, firstname, lastname, password, kanton }) => {
+const register = async ({ email, firstname, lastname, password, kanton, language }) => {
 	logger.info(`Registering user... in service ${email}`);
 	try {
 		const user = await User.create({
@@ -17,6 +17,7 @@ const register = async ({ email, firstname, lastname, password, kanton }) => {
 			password,
 			role: "user",
 			kanton,
+			language
 		});
 
 		const token = generateToken(user);
