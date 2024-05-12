@@ -36,18 +36,44 @@ const register = async ({ email, firstname, lastname, password, kanton, language
 		throw new Error("Error creating user");
 	}
 };
+const registerVolunteer = async ({ firstname, lastname, email, password, kanton, phone, isAvailable, language }) => {
+    logger.info(`Registering volunteer... in service ${email}`);
+    try {
+        const volunteer = await Volunteer.create({
+            firstname,
+            lastname,
+            email,
+            password,
+            role: 'volunteer',  // This assumes your model defines 'volunteer' as a default or only role.
+            kanton,
+            phone,
+            isAvailable,
+            language
+        });
+
+        const token = generateToken(volunteer);
+
+        await sendEmail({
+            from: 'email@example.com',
+            to: email,
+            subject: 'Welcome to Our Volunteer Platform!',
+            message: `Thank you for volunteering. Your access token: ${token}`,
+        });
+
+        logger.info(`Volunteer registered successfully ${email}`);
+        return volunteer;
+    } catch (error) {
+        logger.error(`Error registering volunteer... ${error.message}`);
+        throw new Error("Error registering volunteer");
+    }
+};
 
 const login = async (email, password, res) => {
+	logger.info(`Attempting to log in user: ${email}`);
 	try {
-		let user = await User.findOne({
+		const user = await User.findOne({
 			where: { email: email, password: password },
 		});
-
-		if (!user) {
-			user = await Volunteer.findOne({
-				where: { email: email, password: password },
-			});
-		}
 
 		if (!user) {
 			throw new Error("User not found");
@@ -57,19 +83,42 @@ const login = async (email, password, res) => {
 		res.cookie("accessToken", token, {
 			maxAge: 3 * 60 * 60 * 1000,
 			secure: process.env.NODE_ENV === "production",
+			httpOnly: true,
 		});
 		res.status(200).json({ token, user });
 	} catch (error) {
-		console.error("Login error: ", error);
-		if (!res.headersSent) {
-			res
-				.status(500)
-				.json({ message: "Internal Server Error", error: error.message });
-		}
+		logger.error("Login error: ", error);
+		res
+			.status(500)
+			.json({ message: "Internal Server Error", error: error.message });
 	}
 };
 
+const loginVolunteer = async (email, password, res) => {
+	logger.info(`Attempting to log in volunteer: ${email}`);
+	try {
+		const volunteer = await Volunteer.findOne({
+			where: { email: email, password: password },
+		});
 
+		if (!volunteer) {
+			throw new Error("Volunteer not found");
+		}
+
+		const token = generateToken(volunteer);
+		res.cookie("accessToken", token, {
+			maxAge: 3 * 60 * 60 * 1000,
+			secure: process.env.NODE_ENV === "production",
+			httpOnly: true,
+		});
+		res.status(200).json({ token, volunteer });
+	} catch (error) {
+		logger.error("Login error: ", error);
+		res
+			.status(500)
+			.json({ message: "Internal Server Error", error: error.message });
+	}
+};
 const logout = async (req, res, next) => {
 	try {
 		res.clearCookie("accessToken", {
@@ -105,4 +154,4 @@ const loginAdmin = async (req, res) => {
 	}
 };
 
-export default { register, login, loginAdmin, logout };
+export default { register, login, loginAdmin, logout , registerVolunteer, loginVolunteer};

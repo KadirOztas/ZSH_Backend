@@ -22,7 +22,7 @@ router.get("/kanton/:kanton", async (req, res) => {
 	}
 });
 
-router.get("/id/:id", verifyToken, async (req, res) => {
+router.get("/id/:id", async (req, res) => {
 	const id = req.params.id;
 	try {
 		const volunteer = await VolunteerService.getVolunteerById(id);
@@ -78,7 +78,7 @@ router.put("/:id/availability", verifyToken, async (req, res) => {
 		res.status(500).json({ error: error.message });
 	}
 });
-router.get("/:id/availability", verifyToken, async (req, res) => {
+/* router.get("/:id/availability", verifyToken, async (req, res) => {
 	const userId = req.user.id;
 	const volunteerId = req.params.id;
 
@@ -95,7 +95,7 @@ router.get("/:id/availability", verifyToken, async (req, res) => {
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}
-});
+}); */
 
 router.delete("/:id", verifyToken, async (req, res) => {
 	const id = req.params.id;

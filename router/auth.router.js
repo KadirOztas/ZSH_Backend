@@ -17,7 +17,19 @@ router.post("/register", async (req, res, next) => {
 		next(error);
 	}
 });
-
+router.post("/register/volunteer", async (req, res, next) => {
+	console.log(req.body);
+	logger.info("Registering volunteer...", req.body.email);
+	const volunteer = req.body;
+	try {
+		await authService.registerVolunteer(volunteer);
+		logger.info("Volunteer has registered successfully", req.body.email);
+		res.send("Register");
+	} catch (error) {
+		logger.error("Error registering volunteer", error);
+		next(error);
+	}
+});
 router.post("/login", async (req, res) => {
 	const { email, password } = req.body;
 	try {
@@ -26,7 +38,14 @@ router.post("/login", async (req, res) => {
 		logger.error("Login error caught in router: ", error.message);
 	}
 });
-
+router.post("/login/volunteer", async (req, res) => {
+	const { email, password } = req.body;
+	try {
+		await authService.loginVolunteer(email, password, res);
+	} catch (error) {
+		logger.error("Login error caught in router: ", error.message);
+	}
+});
 
 router.post('/logout', verifyToken, authService.logout);
 router.post("/login-admin", authService.loginAdmin);
