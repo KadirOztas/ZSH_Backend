@@ -1,4 +1,3 @@
-import {Employee} from "./employee.model.js";
 import {User} from "./user.model.js";
 import {File} from "./file.model.js";
 import { Email } from "./email.model.js";
@@ -14,4 +13,4 @@ Volunteer.hasMany(File, {
 });
 
 
-export {Employee, User, File, Email, Volunteer}
+export { User, File, Email, Volunteer}

@@ -1,10 +1,10 @@
 import express from "express";
 import { verifyToken } from "../utility/auth.utility.js";
 import VolunteerService from "../service/volunteer.service.js";
-
+import languageOptions from "../data/languages.js";
 const router = express.Router();
 
-router.get("/",verifyToken, async (req, res) => {
+router.get("/", verifyToken, async (req, res) => {
 	try {
 		const volunteers = await VolunteerService.getAllVolunteers();
 		res.json(volunteers);
@@ -38,13 +38,13 @@ router.get("/id/:id", async (req, res) => {
 });
 
 router.post("/", verifyToken, async (req, res) => {
-	 const data = req.body;
-		try {
-			const newVolunteer = await VolunteerService.createVolunteer(data);
-			res.status(201).json(newVolunteer);
-		} catch (error) {
-			res.status(400).json({ error: error.message });
-		}
+	const data = req.body;
+	try {
+		const newVolunteer = await VolunteerService.createVolunteer(data);
+		res.status(201).json(newVolunteer);
+	} catch (error) {
+		res.status(400).json({ error: error.message });
+	}
 });
 
 router.put("/:id", verifyToken, async (req, res) => {
@@ -78,24 +78,14 @@ router.put("/:id/availability", verifyToken, async (req, res) => {
 		res.status(500).json({ error: error.message });
 	}
 });
-/* router.get("/:id/availability", verifyToken, async (req, res) => {
-	const userId = req.user.id;
-	const volunteerId = req.params.id;
-
+router.get("/languages", async (req, res) => {
 	try {
-		const volunteer = await VolunteerService.getVolunteerById(id);
-
-		if (userId.toString() !== volunteerId) {
-			return res
-				.status(403)
-				.json({ message: "Unauthorized to view this data" });
-		}
-
-		res.json({ isAvailable: volunteer.isAvailable });
+		res.json(languageOptions);
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}
-}); */
+});
+
 
 router.delete("/:id", verifyToken, async (req, res) => {
 	const id = req.params.id;

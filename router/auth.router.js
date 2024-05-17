@@ -47,6 +47,6 @@ router.post("/login/volunteer", async (req, res) => {
 	}
 });
 
-router.post('/logout', verifyToken, authService.logout);
+router.post('/logout', authService.logout);
 router.post("/login-admin", authService.loginAdmin);
 export {router}

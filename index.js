@@ -22,8 +22,7 @@ app.use(express.urlencoded({extended: true}));
 app.use(cookieParser())
 app.use(express.static("public"));
 
-import {router as employeeRouter} from './router/employee.router.js';
-app.use('/employees', employeeRouter);
+
 
 import { router as fileRouter } from "./router/file.router.js"
 app.use("/files", fileRouter)
