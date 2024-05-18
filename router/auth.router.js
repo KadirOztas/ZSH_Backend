@@ -2,28 +2,51 @@ import express  from "express";
 import authService from "../service/auth.service.js";
 import {verifyToken} from "../utility/auth.utility.js";
 import logger from "../config/log.config.js";
-
 const router = express.Router();
 
-router.post('/register', async (req, res, next) => {
-    logger.info('Registering user...', req.body.email);
-    const user = req.body;
-    await authService.register(user);
-    logger.info('User has registered successfully', req.body.email);
-    res.send('Register');
-})
-
-router.post('/login',async (req, res) => {
-    const {email, password} = req.body;
-    const token  = await authService.login(email, password);
-
-    req.session.token = token;
-    res.send('login successfull');
+router.post("/register", async (req, res, next) => {
+	 console.log(req.body);
+	logger.info("Registering user...", req.body.email);
+	const user = req.body;
+	try {
+		await authService.register(user);
+		logger.info("User has registered successfully", req.body.email);
+		res.send("Register");
+	} catch (error) {
+		logger.error("Error registering user", error);
+		next(error);
+	}
+});
+router.post("/register/volunteer", async (req, res, next) => {
+	console.log(req.body);
+	logger.info("Registering volunteer...", req.body.email);
+	const volunteer = req.body;
+	try {
+		await authService.registerVolunteer(volunteer);
+		logger.info("Volunteer has registered successfully", req.body.email);
+		res.send("Register");
+	} catch (error) {
+		logger.error("Error registering volunteer", error);
+		next(error);
+	}
+});
+router.post("/login", async (req, res) => {
+	const { email, password } = req.body;
+	try {
+		await authService.login(email, password, res);
+	} catch (error) {
+		logger.error("Login error caught in router: ", error.message);
+	}
+});
+router.post("/login/volunteer", async (req, res) => {
+	const { email, password } = req.body;
+	try {
+		await authService.loginVolunteer(email, password, res);
+	} catch (error) {
+		logger.error("Login error caught in router: ", error.message);
+	}
 });
 
-router.post('/logout', verifyToken, (req, res) => {
-    req.session = null;
-    res.send('logout successfull');
-});
-
+router.post('/logout', authService.logout);
+router.post("/login-admin", authService.loginAdmin);
 export {router}
