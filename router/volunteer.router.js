@@ -59,10 +59,11 @@ router.put("/:id", verifyToken, async (req, res) => {
 });
 router.put("/:id/availability", verifyToken, async (req, res) => {
 	const userId = req.user.id;
+	const userRole = req.user.role;
 	const volunteerId = req.params.id;
 	const { isAvailable } = req.body;
 
-	if (userId.toString() !== volunteerId) {
+	if (userRole !== "volunteer" || userId.toString() !== volunteerId) {
 		return res
 			.status(403)
 			.json({ message: "Unauthorized to change this data" });

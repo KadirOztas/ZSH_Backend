@@ -44,7 +44,7 @@ const registerVolunteer = async ({ firstname, lastname, email, password, kanton,
             lastname,
             email,
             password,
-            role: 'volunteer',  // This assumes your model defines 'volunteer' as a default or only role.
+            role: 'volunteer',
             kanton,
             phone,
             isAvailable,
