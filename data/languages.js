@@ -20,5 +20,6 @@ const languageOptions = {
 	ti: "ትግርኛ",
 	tr: "Türkçe",
 	uk: "Українська",
+	zh: "简体中文",
 };
 export default languageOptions
