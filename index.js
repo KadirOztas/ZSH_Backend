@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(
 	cors({
-		origin: "https://zsh-backend.onrender.com",
+		origin: "https://zshilfeui.netlify.app",
 		credentials: true,
 	})
 );
