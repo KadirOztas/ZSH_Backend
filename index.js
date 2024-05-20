@@ -10,9 +10,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(
+const local_url = process.env.CORS_LOCAL_URL;
+const deployment_url = process.env.CORS_DEPLOYMENT_URL;
+  app.use(
 	cors({
-		origin: "https://zshilfeui.netlify.app",
+		origin: deployment_url,
 		credentials: true,
 	})
 );
