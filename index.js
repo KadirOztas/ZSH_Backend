@@ -14,7 +14,7 @@ const local_url = process.env.CORS_LOCAL_URL;
 const deployment_url = process.env.CORS_DEPLOYMENT_URL;
   app.use(
 	cors({
-		origin: local_url,
+		origin: deployment_url,
 		credentials: true,
 	})
 );
