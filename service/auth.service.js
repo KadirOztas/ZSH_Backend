@@ -4,10 +4,16 @@ import jwt from "jsonwebtoken";
 
 import config from "../config/auth.config.js";
 import logger from "../config/log.config.js";
-import sendEmail from "./email.service.js";
 import { generateToken } from "../utility/auth.utility.js";
-import { response } from "express";
-const register = async ({ email, firstname, lastname, password, kanton, language }) => {
+
+const register = async ({
+	email,
+	firstname,
+	lastname,
+	password,
+	kanton,
+	language,
+}) => {
 	logger.info(`Registering user... in service ${email}`);
 	try {
 		const user = await User.create({
@@ -17,17 +23,10 @@ const register = async ({ email, firstname, lastname, password, kanton, language
 			password,
 			role: "user",
 			kanton,
-			language
+			language,
 		});
 
 		const token = generateToken(user);
-
-		await sendEmail({
-			from: "email@example.com",
-			to: email,
-			subject: "Welcome to Our Platform!",
-			message: `Thank you for registering. Your token: ${token}`,
-		});
 
 		logger.info(`User is registered ${email}`);
 		return user;
@@ -36,36 +35,39 @@ const register = async ({ email, firstname, lastname, password, kanton, language
 		throw new Error("Error creating user");
 	}
 };
-const registerVolunteer = async ({ firstname, lastname, email, password, kanton, phone, isAvailable, language }) => {
-    logger.info(`Registering volunteer... in service ${email}`);
-    try {
-        const volunteer = await Volunteer.create({
-            firstname,
-            lastname,
-            email,
-            password,
-            role: 'volunteer',
-            kanton,
-            phone,
-            isAvailable,
-            language
-        });
 
-        const token = generateToken(volunteer);
+const registerVolunteer = async ({
+	firstname,
+	lastname,
+	email,
+	password,
+	kanton,
+	phone,
+	isAvailable,
+	language,
+}) => {
+	logger.info(`Registering volunteer... in service ${email}`);
+	try {
+		const volunteer = await Volunteer.create({
+			firstname,
+			lastname,
+			email,
+			password,
+			role: "volunteer",
+			kanton,
+			phone,
+			isAvailable,
+			language,
+		});
 
-        await sendEmail({
-            from: 'email@example.com',
-            to: email,
-            subject: 'Welcome to Our Volunteer Platform!',
-            message: `Thank you for volunteering. Your access token: ${token}`,
-        });
+		const token = generateToken(volunteer);
 
-        logger.info(`Volunteer registered successfully ${email}`);
-        return volunteer;
-    } catch (error) {
-        logger.error(`Error registering volunteer... ${error.message}`);
-        throw new Error("Error registering volunteer");
-    }
+		logger.info(`Volunteer registered successfully ${email}`);
+		return volunteer;
+	} catch (error) {
+		logger.error(`Error registering volunteer... ${error.message}`);
+		throw new Error("Error registering volunteer");
+	}
 };
 
 const login = async (email, password, res) => {
@@ -119,6 +121,7 @@ const loginVolunteer = async (email, password, res) => {
 			.json({ message: "Internal Server Error", error: error.message });
 	}
 };
+
 const logout = async (req, res, next) => {
 	try {
 		res.clearCookie("accessToken", {
@@ -126,7 +129,7 @@ const logout = async (req, res, next) => {
 		});
 		res.send("Logout successful");
 	} catch (error) {
-		next(error)
+		next(error);
 	}
 };
 
@@ -154,4 +157,11 @@ const loginAdmin = async (req, res) => {
 	}
 };
 
-export default { register, login, loginAdmin, logout , registerVolunteer, loginVolunteer};
+export default {
+	register,
+	login,
+	loginAdmin,
+	logout,
+	registerVolunteer,
+	loginVolunteer,
+};
