@@ -57,7 +57,7 @@ router.put("/:id", verifyToken, async (req, res) => {
 		res.status(500).json({ error: error.message });
 	}
 });
-router.put("/:id/availability", verifyToken, async (req, res) => {
+router.put("/availability/:id", verifyToken, async (req, res) => {
 	const userId = req.user.id;
 	const userRole = req.user.role;
 	const volunteerId = req.params.id;
