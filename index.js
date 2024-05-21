@@ -43,7 +43,8 @@ app.use("/volunteer-availability", volunteerRouter);
 import { router as authRouter } from "./router/auth.router.js";
 import logger from "./config/log.config.js";
 app.use("/auth", authRouter);
-
+import { router as resetPasswordRouter } from "./router/resetPassword.router.js"
+app.use("/password", resetPasswordRouter)
 app.use((err, req, res, next) => {
 	console.error(err.stack); // Log the error stack trace
 	res.status(500).send("Something broke!"); // Send a generic error response
