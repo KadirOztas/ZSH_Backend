@@ -6,7 +6,6 @@ import logger from "../config/log.config.js";
 const router = express.Router();
 
 router.post("/register", async (req, res, next) => {
-	console.log(req.body);
 	logger.info("Registering user...", req.body.email);
 	const user = req.body;
 	try {
@@ -20,7 +19,6 @@ router.post("/register", async (req, res, next) => {
 });
 
 router.post("/register/volunteer", async (req, res, next) => {
-	console.log(req.body);
 	logger.info("Registering volunteer...", req.body.email);
 	const volunteer = req.body;
 	try {

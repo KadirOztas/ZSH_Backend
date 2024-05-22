@@ -1,13 +1,7 @@
 import { User } from "../model/user.model.js";
 import { Volunteer } from "../model/volunteer.model.js";
 import logger from "../config/log.config.js";
-
-class PasswordResetError extends Error {
-	constructor(message) {
-		super(message);
-		this.name = "PasswordResetError";
-	}
-}
+import { PasswordResetError } from "../config/error.js";
 
 const resetPassword = async (email, newPassword) => {
 	const user = await User.findOne({ where: { email } });
@@ -24,11 +18,9 @@ const resetPassword = async (email, newPassword) => {
 		return { role: "user" };
 	} else {
 		const volunteer = await Volunteer.findOne({ where: { email } });
-
 		if (!volunteer) {
-			throw new PasswordResetError("User or Volunteer not found");
+			throw new Error("User or Volunteer not found");
 		}
-
 		if (volunteer.password === newPassword) {
 			throw new PasswordResetError(
 				"New password cannot be the same as the old password"

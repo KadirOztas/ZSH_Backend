@@ -62,6 +62,11 @@ const registerVolunteer = async ({
 }) => {
 	logger.info(`Registering volunteer... in service ${email}`);
 	try {
+		const existingVolunteer = await Volunteer.findOne({ where: { email } });
+		if (existingVolunteer) {
+			throw new DuplicateEmailError("Email already in use");
+		}
+
 		const volunteer = await Volunteer.create({
 			firstname,
 			lastname,
@@ -79,8 +84,12 @@ const registerVolunteer = async ({
 		logger.info(`Volunteer registered successfully ${email}`);
 		return volunteer;
 	} catch (error) {
+		if (error instanceof DuplicateEmailError) {
+			logger.error(`Duplicate email error: ${error.message}`);
+			throw error;
+		}
 		logger.error(`Error registering volunteer... ${error.message}`);
-		throw new Error("Error registering volunteer");
+		throw new ValidationError("Error registering volunteer");
 	}
 };
 
