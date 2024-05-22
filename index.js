@@ -47,7 +47,10 @@ import { router as resetPasswordRouter } from "./router/resetPassword.router.js"
 app.use("/password", resetPasswordRouter);
 app.use((err, req, res, next) => {
 	console.error(err.stack); // Log the error stack trace
-	res.status(500).send("Something broke!"); // Send a generic error response
+	if (res.headersSent) {
+		return next(err);
+	}
+	res.status(500).send(err.message || "Something broke!"); // Send a generic error response
 });
 app.get("*", (req, res) => {
 	res.sendFile(path.join(__dirname, "public", "index.html"));
