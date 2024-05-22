@@ -1,10 +1,8 @@
 import { User } from "../model/user.model.js";
 import { Volunteer } from "../model/volunteer.model.js";
-import jwt from "jsonwebtoken";
-
-import config from "../config/auth.config.js";
 import logger from "../config/log.config.js";
 import { generateToken } from "../utility/auth.utility.js";
+import { DuplicateEmailError, ValidationError } from "../config/error.js";
 
 const register = async ({
 	email,
@@ -16,6 +14,11 @@ const register = async ({
 }) => {
 	logger.info(`Registering user... in service ${email}`);
 	try {
+		const existingUser = await User.findOne({ where: { email } });
+		if (existingUser) {
+			throw new DuplicateEmailError("Email already in use");
+		}
+
 		const user = await User.create({
 			email,
 			firstname,
@@ -28,11 +31,22 @@ const register = async ({
 
 		const token = generateToken(user);
 
+		await sendEmail({
+			from: "email@example.com",
+			to: email,
+			subject: "Welcome to Our Platform!",
+			message: `Thank you for registering. Your token: ${token}`,
+		});
+
 		logger.info(`User is registered ${email}`);
 		return user;
 	} catch (error) {
+		if (error instanceof DuplicateEmailError) {
+			logger.error(`Duplicate email error: ${error.message}`);
+			throw error;
+		}
 		logger.error(`Error creating user... ${error.message}`);
-		throw new Error("Error creating user");
+		throw new ValidationError("Error creating user");
 	}
 };
 
