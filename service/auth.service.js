@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Volunteer } from "../model/volunteer.model.js";
 import logger from "../config/log.config.js";
 import { generateToken } from "../utility/auth.utility.js";
+import bcrypt from "bcrypt";
 import { DuplicateEmailError, ValidationError } from "../config/error.js";
 
 const register = async ({
@@ -63,6 +64,7 @@ const registerVolunteer = async ({
 		}
 
 		const volunteer = await Volunteer.create({
+			id: uuidv4(),
 			firstname,
 			lastname,
 			email,
@@ -89,15 +91,28 @@ const registerVolunteer = async ({
 };
 
 const login = async (email, password, res) => {
-	logger.info(`Attempting to log in user: ${email}`);
+	logger.info(`Attempting to log in user or volunteer: ${email}`);
 	try {
-		const user = await User.findOne({
-			where: { email: email, password: password },
-		});
+		let user = await User.findOne({ where: { email } });
+		let userType = "user";
+
+		if (!user) {
+			user = await Volunteer.findOne({ where: { email } });
+			userType = "volunteer";
+		}
 
 		if (!user) {
 			throw new Error("User not found");
 		}
+
+		logger.info(`User found: ${user.email}, comparing passwords...`);
+
+		if (password !== user.password) {
+			logger.error("Invalid password entered");
+			throw new Error("Invalid password");
+		}
+
+		logger.info("Password is valid, generating token...");
 
 		const token = generateToken(user);
 		res.cookie("accessToken", token, {
@@ -105,38 +120,17 @@ const login = async (email, password, res) => {
 			secure: process.env.NODE_ENV === "production",
 			httpOnly: true,
 		});
-		res.status(200).json({ token, user });
-	} catch (error) {
-		logger.error("Login error: ", error);
-		res
-			.status(500)
-			.json({ message: "Internal Server Error", error: error.message });
-	}
-};
 
-const loginVolunteer = async (email, password, res) => {
-	logger.info(`Attempting to log in volunteer: ${email}`);
-	try {
-		const volunteer = await Volunteer.findOne({
-			where: { email: email, password: password },
-		});
-
-		if (!volunteer) {
-			throw new Error("Volunteer not found");
+		if (userType === "user") {
+			res.status(200).json({ token, user });
+		} else {
+			res.status(200).json({ token, volunteer: user });
 		}
-
-		const token = generateToken(volunteer);
-		res.cookie("accessToken", token, {
-			maxAge: 3 * 60 * 60 * 1000,
-			secure: process.env.NODE_ENV === "production",
-			httpOnly: true,
-		});
-		res.status(200).json({ token, volunteer });
 	} catch (error) {
 		logger.error("Login error: ", error);
 		res
-			.status(500)
-			.json({ message: "Internal Server Error", error: error.message });
+			.status(401)
+			.json({ message: "Invalid email or password", error: error.message });
 	}
 };
 
@@ -181,5 +175,4 @@ export default {
 	loginAdmin,
 	logout,
 	registerVolunteer,
-	loginVolunteer,
 };
