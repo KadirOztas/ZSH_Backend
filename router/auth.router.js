@@ -18,21 +18,9 @@ router.post("/register", async (req, res, next) => {
 	}
 });
 
-router.post("/register/volunteer", async (req, res, next) => {
-	logger.info("Registering volunteer...", req.body.email);
-	const volunteer = req.body;
-	try {
-		const registeredVolunteer = await authService.registerVolunteer(volunteer);
-		logger.info("Volunteer has registered successfully", req.body.email);
-		res.json({ message: "Register", volunteer: registeredVolunteer });
-	} catch (error) {
-		logger.error("Error registering volunteer", error);
-		next(error);
-	}
-});
-
 router.post("/send-welcome-email", async (req, res) => {
 	const { email, subject, message } = req.body;
+	console.log("Received email content:", req.body);
 	try {
 		await sendEmail({ from: "email@example.com", to: email, subject, message });
 		res.status(200).send("Welcome email sent");

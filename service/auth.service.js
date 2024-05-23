@@ -1,4 +1,5 @@
 import { User } from "../model/user.model.js";
+import { v4 as uuidv4 } from "uuid";
 import { Volunteer } from "../model/volunteer.model.js";
 import logger from "../config/log.config.js";
 import { generateToken } from "../utility/auth.utility.js";
@@ -20,6 +21,7 @@ const register = async ({
 		}
 
 		const user = await User.create({
+			id: uuidv4(),
 			email,
 			firstname,
 			lastname,
@@ -30,13 +32,6 @@ const register = async ({
 		});
 
 		const token = generateToken(user);
-
-		await sendEmail({
-			from: "email@example.com",
-			to: email,
-			subject: "Welcome to Our Platform!",
-			message: `Thank you for registering. Your token: ${token}`,
-		});
 
 		logger.info(`User is registered ${email}`);
 		return user;

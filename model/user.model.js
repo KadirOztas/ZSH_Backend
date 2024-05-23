@@ -1,25 +1,31 @@
 import sequelize from "../config/database.config.js";
 import { DataTypes } from "sequelize";
+import { v4 as uuidv4 } from "uuid";
 
 const User = sequelize.define(
 	"User",
 	{
+		id: {
+			type: DataTypes.UUID,
+			defaultValue: uuidv4,
+			primaryKey: true,
+		},
 		firstname: {
-			type: DataTypes.STRING,
+			type: DataTypes.STRING(255),
 			allowNull: false,
 			notEmpty: {
 				msg: "First Name is required",
 			},
 		},
 		lastname: {
-			type: DataTypes.STRING,
+			type: DataTypes.STRING(255),
 			allowNull: false,
 			notEmpty: {
 				msg: "Last Name is required",
 			},
 		},
 		email: {
-			type: DataTypes.STRING,
+			type: DataTypes.STRING(255),
 			allowNull: false,
 			unique: true,
 			validate: {
@@ -29,7 +35,7 @@ const User = sequelize.define(
 			},
 		},
 		password: {
-			type: DataTypes.STRING,
+			type: DataTypes.STRING(255),
 			allowNull: false,
 			notEmpty: {
 				msg: "Password is required",
@@ -41,13 +47,12 @@ const User = sequelize.define(
 			allowNull: false,
 			defaultValue: "user",
 		},
-
 		kanton: {
-			type: DataTypes.STRING,
+			type: DataTypes.STRING(255),
 			allowNull: false,
 		},
 		language: {
-			type: DataTypes.STRING,
+			type: DataTypes.STRING(255),
 			allowNull: false,
 		},
 	},

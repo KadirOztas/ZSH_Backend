@@ -1,11 +1,12 @@
-import nodemailer from "nodemailer"
-import { Email } from "../model/email.model.js"
+import nodemailer from "nodemailer";
+import { Email } from "../model/email.model.js";
+
 const transporter = nodemailer.createTransport({
 	host: "smtp.gmail.com",
 	port: 587,
 	secure: false,
 	auth: {
-		user: "m.abdulkadiroztas@gmail.com",
+		user: process.env.EMAIL_USER,
 		pass: process.env.EMAIL_APP_PASSWORD,
 	},
 });
@@ -24,4 +25,4 @@ const sendEmail = async ({ from, to, subject, message }) => {
 	}
 };
 
-export default sendEmail
+export default sendEmail;

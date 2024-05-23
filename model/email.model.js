@@ -1,5 +1,6 @@
 import sequelize from "../config/database.config.js";
 import { DataTypes } from "sequelize";
+
 const Email = sequelize.define(
 	"Email",
 	{
@@ -16,7 +17,7 @@ const Email = sequelize.define(
 			allowNull: false,
 		},
 		message: {
-			type: DataTypes.STRING,
+			type: DataTypes.TEXT,
 			allowNull: false,
 		},
 		sentAt: {
@@ -28,4 +29,5 @@ const Email = sequelize.define(
 		tableName: "emails",
 	}
 );
+
 export { Email };
