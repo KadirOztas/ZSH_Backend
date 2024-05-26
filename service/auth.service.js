@@ -112,7 +112,6 @@ const login = async (email, password, res) => {
 
 		logger.info(`User found: ${user.email}, comparing passwords...`);
 
-		// Compare the hashed password
 		const isPasswordValid = await bcrypt.compare(password, user.password);
 		if (!isPasswordValid) {
 			logger.error("Invalid password entered");
@@ -169,6 +168,8 @@ const loginAdmin = async (req, res) => {
 
 		res.cookie("accessToken", token, {
 			maxAge: 86400 * 1000,
+			secure: process.env.NODE_ENV === "production",
+			httpOnly: true,
 		});
 
 		res.json({ message: "Admin login successful", accessToken: token });
@@ -176,6 +177,7 @@ const loginAdmin = async (req, res) => {
 		res.status(401).send({ message: "Invalid credentials" });
 	}
 };
+
 
 export default {
 	register,

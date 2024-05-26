@@ -15,6 +15,7 @@ const VolunteerService = {
 			console.log("Fetching volunteers for kanton: ", kanton);
 			const volunteers = await Volunteer.findAll({
 				where: { kanton: kanton },
+				attributes: ["firstname", "lastname", "kanton", "language"],
 			});
 			console.log("Found volunteers: ", volunteers);
 			return volunteers;
@@ -89,6 +90,33 @@ const VolunteerService = {
 			return volunteer;
 		} catch (error) {
 			throw new Error("Error while deleting volunteer: " + error.message);
+		}
+	},
+	async getAllVolunteerDetailsByKanton(kanton) {
+		try {
+			console.log("Fetching detailed volunteers for kanton: ", kanton);
+			const volunteers = await Volunteer.findAll({
+				where: { kanton: kanton },
+				attributes: [
+					"id",
+					"firstname",
+					"lastname",
+					"email",
+					"phone",
+					"isAvailable",
+					"language",
+				],
+			});
+			console.log("Found detailed volunteers: ", volunteers);
+			return volunteers;
+		} catch (error) {
+			console.error(
+				"Error while fetching detailed volunteers by kanton: ",
+				error.message
+			);
+			throw new Error(
+				"Error while fetching detailed volunteers by kanton: " + error.message
+			);
 		}
 	},
 };

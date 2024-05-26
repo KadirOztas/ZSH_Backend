@@ -60,6 +60,6 @@ router.post("/login", async (req, res) => {
 
 
 router.post("/logout", authService.logout);
-router.post("/login-admin", verifyRole(["admin"]), authService.loginAdmin);
+router.post("/login-admin", authService.loginAdmin);
 
 export { router };

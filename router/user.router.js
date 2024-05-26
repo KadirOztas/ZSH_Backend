@@ -9,7 +9,35 @@ router.get("/", verifyRole(["admin"]), verifyToken, async (req, res) => {
 });
 
 router.get("/:id", verifyToken, async (req, res) => {
-	res.send(await User.findByPk(req.params.id));
+	const userId = req.user.id;
+	const userRole = req.user.role;
+	const requestedUserId = req.params.id;
+
+	if (userRole !== "admin" && userId !== requestedUserId) {
+		return res.status(403).json({ message: "Unauthorized to view this data" });
+	}
+
+	try {
+		const user = await User.findByPk(requestedUserId, {
+			attributes: [
+				"id",
+				"firstname",
+				"lastname",
+				"email",
+				"role",
+				"kanton",
+				"language",
+				"createdAt",
+				"updatedAt",
+			],
+		});
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+		res.json(user);
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
 });
 
 router.post("/", verifyToken, async (req, res) => {
