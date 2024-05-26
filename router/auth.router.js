@@ -2,6 +2,7 @@ import express from "express";
 import authService from "../service/auth.service.js";
 import sendEmail from "../service/email.service.js";
 import logger from "../config/log.config.js";
+import { verifyRole } from "../utility/auth.utility.js";
 
 const router = express.Router();
 
@@ -59,6 +60,6 @@ router.post("/login", async (req, res) => {
 
 
 router.post("/logout", authService.logout);
-router.post("/login-admin", authService.loginAdmin);
+router.post("/login-admin", verifyRole(["admin"]), authService.loginAdmin);
 
 export { router };

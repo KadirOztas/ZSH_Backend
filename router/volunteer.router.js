@@ -1,10 +1,10 @@
 import express from "express";
-import { verifyToken } from "../utility/auth.utility.js";
+import { verifyRole, verifyToken } from "../utility/auth.utility.js";
 import VolunteerService from "../service/volunteer.service.js";
 import languageOptions from "../data/languages.js";
 const router = express.Router();
 
-router.get("/", verifyToken, async (req, res) => {
+router.get("/", verifyToken, verifyRole(["admin"]), async (req, res) => {
 	try {
 		const volunteers = await VolunteerService.getAllVolunteers();
 		res.json(volunteers);
@@ -22,7 +22,7 @@ router.get("/kanton/:kanton", async (req, res) => {
 	}
 });
 
-router.get("/id/:id", async (req, res) => {
+router.get("/id/:id", verifyRole(["admin"]), verifyToken, async (req, res) => {
 	const id = req.params.id;
 	try {
 		const volunteer = await VolunteerService.getVolunteerById(id);
@@ -37,7 +37,7 @@ router.get("/id/:id", async (req, res) => {
 	}
 });
 
-router.post("/", verifyToken, async (req, res) => {
+router.post("/", verifyToken, verifyRole(["admin"]), async (req, res) => {
 	const data = req.body;
 	try {
 		const newVolunteer = await VolunteerService.createVolunteer(data);
@@ -47,7 +47,7 @@ router.post("/", verifyToken, async (req, res) => {
 	}
 });
 
-router.put("/:id", verifyToken, async (req, res) => {
+router.put("/:id", verifyToken, verifyRole(["admin"]), async (req, res) => {
 	const id = req.params.id;
 	const data = req.body;
 	try {
@@ -57,29 +57,33 @@ router.put("/:id", verifyToken, async (req, res) => {
 		res.status(500).json({ error: error.message });
 	}
 });
-router.put("/availability/:id", verifyToken, async (req, res) => {
-	const userId = req.user.id;
-	const userRole = req.user.role;
-	const volunteerId = req.params.id;
-	const { isAvailable } = req.body;
+router.put(
+	"/availability/:id",
+	verifyToken,
+	async (req, res) => {
+		const userId = req.user.id;
+		const userRole = req.user.role;
+		const volunteerId = req.params.id;
+		const { isAvailable } = req.body;
 
-	if (userRole !== "volunteer") {
-		return res
-			.status(403)
-			.json({ message: "Unauthorized to change this data" });
-	}
+		if (userRole !== "volunteer") {
+			return res
+				.status(403)
+				.json({ message: "Unauthorized to change this data" });
+		}
 
-	try {
-		const volunteer = await VolunteerService.updateVolunteerAvailability(
-			userId,
-			volunteerId,
-			isAvailable
-		);
-		res.json(volunteer);
-	} catch (error) {
-		res.status(500).json({ error: error.message });
+		try {
+			const volunteer = await VolunteerService.updateVolunteerAvailability(
+				userId,
+				volunteerId,
+				isAvailable
+			);
+			res.json(volunteer);
+		} catch (error) {
+			res.status(500).json({ error: error.message });
+		}
 	}
-});
+);
 
 router.get("/languages", async (req, res) => {
 	try {
@@ -90,7 +94,7 @@ router.get("/languages", async (req, res) => {
 });
 
 
-router.delete("/:id", verifyToken, async (req, res) => {
+router.delete("/:id", verifyRole(["admin"]), verifyToken, async (req, res) => {
 	const id = req.params.id;
 	try {
 		const deletedVolunteer = await VolunteerService.deleteVolunteer(id);
