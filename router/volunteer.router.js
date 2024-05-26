@@ -2,6 +2,7 @@ import express from "express";
 import { verifyRole, verifyToken } from "../utility/auth.utility.js";
 import VolunteerService from "../service/volunteer.service.js";
 import languageOptions from "../data/languages.js";
+import logger from "../config/log.config.js";
 const router = express.Router();
 
 router.get("/", verifyToken, verifyRole(["admin"]), async (req, res) => {
@@ -12,33 +13,29 @@ router.get("/", verifyToken, verifyRole(["admin"]), async (req, res) => {
 		res.status(500).json({ error: error.message });
 	}
 });
-router.get("/kanton/:kanton", async (req, res) => {
-	const kanton = req.params.kanton;
-	try {
-		const volunteers = await VolunteerService.getVolunteersByKanton(kanton);
-		res.json(volunteers);
-	} catch (error) {
-		res.status(500).json({ error: error.message });
-	}
-});
 router.get(
-	"/admin/kanton/:kanton",
+	"/kanton/:kanton",
 	verifyToken,
-	verifyRole(["admin"]),
+	verifyRole(["admin", "volunteer"]),
 	async (req, res) => {
 		const kanton = req.params.kanton;
 		try {
-			const volunteers = await VolunteerService.getAllVolunteerDetailsByKanton(
-				kanton
-			);
+			const volunteers = await VolunteerService.getVolunteersByKanton(kanton);
 			res.json(volunteers);
 		} catch (error) {
-			logger.error("Error fetching detailed volunteers by kanton", error);
 			res.status(500).json({ error: error.message });
 		}
 	}
 );
 
+router.get("/languages", async (req, res) => {
+	try {
+		res.json(languageOptions);
+	} catch (error) {
+		logger.error("Error fetching languages:", error);
+		res.status(500).json({ error: error.message });
+	}
+});
 router.post("/", verifyToken, verifyRole(["admin"]), async (req, res) => {
 	const data = req.body;
 	try {
@@ -48,6 +45,39 @@ router.post("/", verifyToken, verifyRole(["admin"]), async (req, res) => {
 		res.status(400).json({ error: error.message });
 	}
 });
+router.put(
+	"/availability/:id",
+	verifyToken,
+	verifyRole(["volunteer"]),
+	async (req, res) => {
+		const userId = req.user.id;
+		const userRole = req.user.role;
+		const volunteerId = req.params.id;
+		const { isAvailable } = req.body;
+
+		console.log("User ID: ", userId);
+		console.log("Volunteer ID: ", volunteerId);
+
+		if (userRole !== "volunteer" || userId.toString() !== volunteerId) {
+			return res
+				.status(403)
+				.json({ message: "Unauthorized to change this data" });
+		}
+
+		try {
+			const volunteer = await VolunteerService.updateVolunteerAvailability(
+				userId,
+				volunteerId,
+				isAvailable
+			);
+			res.json(volunteer);
+		} catch (error) {
+			logger.error("Error updating volunteer availability", error);
+			res.status(500).json({ error: error.message });
+		}
+	}
+);
+
 router.get(
 	"/:id",
 	verifyToken,
@@ -73,42 +103,6 @@ router.put("/:id", verifyToken, verifyRole(["admin"]), async (req, res) => {
 		res.status(500).json({ error: error.message });
 	}
 });
-router.put(
-	"/availability/:id",
-	verifyToken,
-	async (req, res) => {
-		const userId = req.user.id;
-		const userRole = req.user.role;
-		const volunteerId = req.params.id;
-		const { isAvailable } = req.body;
-
-		if (userRole !== "volunteer") {
-			return res
-				.status(403)
-				.json({ message: "Unauthorized to change this data" });
-		}
-
-		try {
-			const volunteer = await VolunteerService.updateVolunteerAvailability(
-				userId,
-				volunteerId,
-				isAvailable
-			);
-			res.json(volunteer);
-		} catch (error) {
-			res.status(500).json({ error: error.message });
-		}
-	}
-);
-
-router.get("/languages", async (req, res) => {
-	try {
-		res.json(languageOptions);
-	} catch (error) {
-		res.status(500).json({ error: error.message });
-	}
-});
-
 
 router.delete("/:id", verifyRole(["admin"]), verifyToken, async (req, res) => {
 	const id = req.params.id;

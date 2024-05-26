@@ -4,9 +4,14 @@ import { verifyRole, verifyToken } from "../utility/auth.utility.js";
 
 const router = express.Router();
 
-router.get("/", verifyRole(["admin"]), verifyToken, async (req, res) => {
-	res.send(await User.findAll());
-});
+router.get(
+	"/",
+	verifyToken,
+	verifyRole(["admin", "volunteer"]),
+	async (req, res) => {
+		res.send(await User.findAll());
+	}
+);
 
 router.get("/:id", verifyToken, async (req, res) => {
 	const userId = req.user.id;

@@ -15,7 +15,15 @@ const VolunteerService = {
 			console.log("Fetching volunteers for kanton: ", kanton);
 			const volunteers = await Volunteer.findAll({
 				where: { kanton: kanton },
-				attributes: ["firstname", "lastname", "kanton", "language"],
+				attributes: [
+					"firstname",
+					"lastname",
+					"kanton",
+					"language",
+					"isAvailable",
+					"phone",
+					"id",
+				],
 			});
 			console.log("Found volunteers: ", volunteers);
 			return volunteers;
@@ -51,18 +59,24 @@ const VolunteerService = {
 		}
 	},
 
-	async updateVolunteer(id, data) {
+	async updateVolunteerAvailability(userId, volunteerId, isAvailable) {
 		try {
-			const volunteer = await Volunteer.findByPk(id);
+			const volunteer = await Volunteer.findByPk(volunteerId);
 			if (!volunteer) {
 				throw new Error("Volunteer not found");
 			}
-			await volunteer.update(data);
+			if (volunteer.id !== userId) {
+				throw new Error("Unauthorized to change this data");
+			}
+			await volunteer.update({ isAvailable });
 			return volunteer;
 		} catch (error) {
-			throw new Error("Error while updating volunteer: " + error.message);
+			throw new Error(
+				"Error updating volunteer availability: " + error.message
+			);
 		}
 	},
+
 	async updateVolunteerAvailability(userId, volunteerId, isAvailable) {
 		try {
 			const volunteer = await Volunteer.findByPk(volunteerId);
@@ -90,33 +104,6 @@ const VolunteerService = {
 			return volunteer;
 		} catch (error) {
 			throw new Error("Error while deleting volunteer: " + error.message);
-		}
-	},
-	async getAllVolunteerDetailsByKanton(kanton) {
-		try {
-			console.log("Fetching detailed volunteers for kanton: ", kanton);
-			const volunteers = await Volunteer.findAll({
-				where: { kanton: kanton },
-				attributes: [
-					"id",
-					"firstname",
-					"lastname",
-					"email",
-					"phone",
-					"isAvailable",
-					"language",
-				],
-			});
-			console.log("Found detailed volunteers: ", volunteers);
-			return volunteers;
-		} catch (error) {
-			console.error(
-				"Error while fetching detailed volunteers by kanton: ",
-				error.message
-			);
-			throw new Error(
-				"Error while fetching detailed volunteers by kanton: " + error.message
-			);
 		}
 	},
 };
