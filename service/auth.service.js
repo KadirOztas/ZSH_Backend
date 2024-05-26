@@ -21,12 +21,15 @@ const register = async ({
 			throw new DuplicateEmailError("Email already in use");
 		}
 
+		// Hash the password before saving
+		const hashedPassword = await bcrypt.hash(password, 10);
+
 		const user = await User.create({
 			id: uuidv4(),
 			email,
 			firstname,
 			lastname,
-			password,
+			password: hashedPassword,
 			role: "user",
 			kanton,
 			language,
@@ -63,12 +66,14 @@ const registerVolunteer = async ({
 			throw new DuplicateEmailError("Email already in use");
 		}
 
+		const hashedPassword = await bcrypt.hash(password, 10);
+
 		const volunteer = await Volunteer.create({
 			id: uuidv4(),
 			firstname,
 			lastname,
 			email,
-			password,
+			password: hashedPassword,
 			role: "volunteer",
 			kanton,
 			phone,
@@ -107,7 +112,9 @@ const login = async (email, password, res) => {
 
 		logger.info(`User found: ${user.email}, comparing passwords...`);
 
-		if (password !== user.password) {
+		// Compare the hashed password
+		const isPasswordValid = await bcrypt.compare(password, user.password);
+		if (!isPasswordValid) {
 			logger.error("Invalid password entered");
 			throw new Error("Invalid password");
 		}
@@ -133,6 +140,7 @@ const login = async (email, password, res) => {
 			.json({ message: "Invalid email or password", error: error.message });
 	}
 };
+
 
 const logout = async (req, res, next) => {
 	try {

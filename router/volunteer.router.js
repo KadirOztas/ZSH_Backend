@@ -63,7 +63,7 @@ router.put("/availability/:id", verifyToken, async (req, res) => {
 	const volunteerId = req.params.id;
 	const { isAvailable } = req.body;
 
-	if (userRole !== "volunteer" || userId.toString() !== volunteerId) {
+	if (userRole !== "volunteer") {
 		return res
 			.status(403)
 			.json({ message: "Unauthorized to change this data" });
@@ -71,6 +71,7 @@ router.put("/availability/:id", verifyToken, async (req, res) => {
 
 	try {
 		const volunteer = await VolunteerService.updateVolunteerAvailability(
+			userId,
 			volunteerId,
 			isAvailable
 		);
@@ -79,6 +80,7 @@ router.put("/availability/:id", verifyToken, async (req, res) => {
 		res.status(500).json({ error: error.message });
 	}
 });
+
 router.get("/languages", async (req, res) => {
 	try {
 		res.json(languageOptions);

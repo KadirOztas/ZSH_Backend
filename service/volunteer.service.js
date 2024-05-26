@@ -11,18 +11,23 @@ const VolunteerService = {
 		}
 	},
 	async getVolunteersByKanton(kanton) {
-    try {
-        console.log("Fetching volunteers for kanton: ", kanton);
-        const volunteers = await Volunteer.findAll({
-            where: { kanton: kanton },
-        });
-        console.log("Found volunteers: ", volunteers); 
-        return volunteers;
-    } catch (error) {
-        console.error("Error while fetching volunteers by kanton: ", error.message);
-        throw new Error("Error while fetching volunteers by kanton: " + error.message);
-    }
-},
+		try {
+			console.log("Fetching volunteers for kanton: ", kanton);
+			const volunteers = await Volunteer.findAll({
+				where: { kanton: kanton },
+			});
+			console.log("Found volunteers: ", volunteers);
+			return volunteers;
+		} catch (error) {
+			console.error(
+				"Error while fetching volunteers by kanton: ",
+				error.message
+			);
+			throw new Error(
+				"Error while fetching volunteers by kanton: " + error.message
+			);
+		}
+	},
 
 	async createVolunteer(data) {
 		try {
@@ -57,11 +62,14 @@ const VolunteerService = {
 			throw new Error("Error while updating volunteer: " + error.message);
 		}
 	},
-	async updateVolunteerAvailability(id, isAvailable) {
+	async updateVolunteerAvailability(userId, volunteerId, isAvailable) {
 		try {
-			const volunteer = await Volunteer.findByPk(id);
+			const volunteer = await Volunteer.findByPk(volunteerId);
 			if (!volunteer) {
 				throw new Error("Volunteer not found");
+			}
+			if (volunteer.id !== userId) {
+				throw new Error("Unauthorized to change this data");
 			}
 			await volunteer.update({ isAvailable });
 			return volunteer;
@@ -99,7 +107,7 @@ const populateVolunteers = async () => {
 					kanton: kanton,
 					phone: volunteerData.phone,
 					isAvailable: volunteerData.isAvailable,
-					language:volunteerData.language
+					language: volunteerData.language,
 				});
 			}
 		}
