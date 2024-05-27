@@ -1,18 +1,22 @@
 import { User } from "../model/user.model.js";
 import { Volunteer } from "../model/volunteer.model.js";
+import bcrypt from "bcrypt";
 import logger from "../config/log.config.js";
 import { PasswordResetError } from "../config/error.js";
 
 const resetPassword = async (email, newPassword) => {
+	const hashedPassword = await bcrypt.hash(newPassword, 10);
+
 	const user = await User.findOne({ where: { email } });
 
 	if (user) {
-		if (user.password === newPassword) {
+		const isSamePassword = await bcrypt.compare(newPassword, user.password);
+		if (isSamePassword) {
 			throw new PasswordResetError(
 				"New password cannot be the same as the old password"
 			);
 		}
-		user.password = newPassword;
+		user.password = hashedPassword;
 		await user.save();
 		logger.info(`Password reset for user: ${email}`);
 		return { role: "user" };
@@ -21,12 +25,16 @@ const resetPassword = async (email, newPassword) => {
 		if (!volunteer) {
 			throw new Error("User or Volunteer not found");
 		}
-		if (volunteer.password === newPassword) {
+		const isSamePassword = await bcrypt.compare(
+			newPassword,
+			volunteer.password
+		);
+		if (isSamePassword) {
 			throw new PasswordResetError(
 				"New password cannot be the same as the old password"
 			);
 		}
-		volunteer.password = newPassword;
+		volunteer.password = hashedPassword;
 		await volunteer.save();
 		logger.info(`Password reset for volunteer: ${email}`);
 		return { role: "volunteer" };
