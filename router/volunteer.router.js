@@ -4,6 +4,7 @@ import VolunteerService from "../service/volunteer.service.js";
 import languageOptions from "../data/languages.js";
 import logger from "../config/log.config.js";
 import rateLimit from "express-rate-limit";
+import { verifyHCaptcha } from "../service/hcaptcha.service.js";
 
 const router = express.Router();
 
@@ -21,9 +22,21 @@ router.get("/", verifyToken, verifyRole(["admin"]), async (req, res) => {
 		res.status(500).json({ error: error.message });
 	}
 });
+
 router.get("/kanton/:kanton", limiter, async (req, res) => {
+	const captchaToken = req.headers["x-captcha-token"];
+
+	if (!captchaToken) {
+		return res.status(400).json({ error: "Captcha token is required" });
+	}
+
+	const isCaptchaValid = await verifyHCaptcha(captchaToken);
+	if (!isCaptchaValid) {
+		return res.status(400).json({ error: "Invalid captcha" });
+	}
+
 	const kanton = req.params.kanton;
-	const limit = parseInt(req.query.limit) || 10; // By default 10 volunteers are shown
+	const limit = parseInt(req.query.limit) || 10;
 
 	try {
 		const volunteers = await VolunteerService.getVolunteersByKanton(
@@ -54,6 +67,7 @@ router.get("/languages", async (req, res) => {
 		res.status(500).json({ error: error.message });
 	}
 });
+
 router.post("/", verifyToken, verifyRole(["admin"]), async (req, res) => {
 	const data = req.body;
 	try {
@@ -63,6 +77,7 @@ router.post("/", verifyToken, verifyRole(["admin"]), async (req, res) => {
 		res.status(400).json({ error: error.message });
 	}
 });
+
 router.put(
 	"/availability/:id",
 	verifyToken,
@@ -111,6 +126,7 @@ router.get(
 		}
 	}
 );
+
 router.put("/:id", verifyToken, verifyRole(["admin"]), async (req, res) => {
 	const id = req.params.id;
 	const data = req.body;
