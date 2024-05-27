@@ -1,5 +1,6 @@
 import { allVolunteers } from "../data/volunteers.js";
 import { Volunteer } from "../model/volunteer.model.js";
+import bcrypt from "bcrypt";
 
 const VolunteerService = {
 	async getAllVolunteers() {
@@ -10,11 +11,12 @@ const VolunteerService = {
 			throw new Error("Error while fetching volunteers: " + error.message);
 		}
 	},
-	async getVolunteersByKanton(kanton) {
+	async getVolunteersByKanton(kanton, limit) {
 		try {
 			console.log("Fetching volunteers for kanton: ", kanton);
 			const volunteers = await Volunteer.findAll({
 				where: { kanton: kanton },
+				limit: limit,
 				attributes: [
 					"firstname",
 					"lastname",
@@ -107,17 +109,20 @@ const VolunteerService = {
 		}
 	},
 };
+
 const populateVolunteers = async () => {
 	try {
 		for (const kantonData of allVolunteers) {
 			const { kanton, volunteers } = kantonData;
 
 			for (const volunteerData of volunteers) {
+				const hashedPassword = await bcrypt.hash(volunteerData.password, 10);
+
 				await Volunteer.create({
 					firstname: volunteerData.firstname,
 					lastname: volunteerData.lastname,
 					email: volunteerData.email,
-					password: volunteerData.password,
+					password: hashedPassword,
 					role: volunteerData.role,
 					kanton: kanton,
 					phone: volunteerData.phone,

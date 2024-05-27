@@ -3,7 +3,15 @@ import { verifyRole, verifyToken } from "../utility/auth.utility.js";
 import VolunteerService from "../service/volunteer.service.js";
 import languageOptions from "../data/languages.js";
 import logger from "../config/log.config.js";
+import rateLimit from "express-rate-limit";
+
 const router = express.Router();
+
+const limiter = rateLimit({
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	max: 30, // 30 requests in 15 minutes
+	message: "Too many requests from this IP, please try again later.",
+});
 
 router.get("/", verifyToken, verifyRole(["admin"]), async (req, res) => {
 	try {
@@ -13,20 +21,30 @@ router.get("/", verifyToken, verifyRole(["admin"]), async (req, res) => {
 		res.status(500).json({ error: error.message });
 	}
 });
-router.get(
-	"/kanton/:kanton",
-	verifyToken,
-	verifyRole(["admin", "volunteer"]),
-	async (req, res) => {
-		const kanton = req.params.kanton;
-		try {
-			const volunteers = await VolunteerService.getVolunteersByKanton(kanton);
-			res.json(volunteers);
-		} catch (error) {
-			res.status(500).json({ error: error.message });
-		}
+router.get("/kanton/:kanton", limiter, async (req, res) => {
+	const kanton = req.params.kanton;
+	const limit = parseInt(req.query.limit) || 10; // By default 10 volunteers are shown
+
+	try {
+		const volunteers = await VolunteerService.getVolunteersByKanton(
+			kanton,
+			limit
+		);
+		const filteredVolunteers = volunteers.map((volunteer) => ({
+			firstname: volunteer.firstname,
+			lastname: volunteer.lastname,
+			kanton: volunteer.kanton,
+			language: volunteer.language,
+			isAvailable: volunteer.isAvailable,
+			id: volunteer.id,
+			phone: volunteer.phone,
+		}));
+		res.json(filteredVolunteers);
+	} catch (error) {
+		logger.error("Error fetching volunteers by kanton", error);
+		res.status(500).json({ error: error.message });
 	}
-);
+});
 
 router.get("/languages", async (req, res) => {
 	try {
