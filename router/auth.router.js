@@ -2,11 +2,11 @@ import express from "express";
 import authService from "../service/auth.service.js";
 import sendEmail from "../service/email.service.js";
 import logger from "../config/log.config.js";
+import { verifyRole } from "../utility/auth.utility.js";
 
 const router = express.Router();
 
 router.post("/register", async (req, res, next) => {
-	console.log(req.body);
 	logger.info("Registering user...", req.body.email);
 	const user = req.body;
 	try {
@@ -20,10 +20,11 @@ router.post("/register", async (req, res, next) => {
 });
 
 router.post("/register/volunteer", async (req, res, next) => {
-	console.log(req.body);
+	console.log("Request body:", req.body);
 	logger.info("Registering volunteer...", req.body.email);
 	const volunteer = req.body;
 	try {
+		 console.log("Request body:", req.body);
 		const registeredVolunteer = await authService.registerVolunteer(volunteer);
 		logger.info("Volunteer has registered successfully", req.body.email);
 		res.json({ message: "Register", volunteer: registeredVolunteer });
@@ -35,6 +36,7 @@ router.post("/register/volunteer", async (req, res, next) => {
 
 router.post("/send-welcome-email", async (req, res) => {
 	const { email, subject, message } = req.body;
+	console.log("Received email content:", req.body);
 	try {
 		await sendEmail({ from: "email@example.com", to: email, subject, message });
 		res.status(200).send("Welcome email sent");
@@ -44,23 +46,20 @@ router.post("/send-welcome-email", async (req, res) => {
 	}
 });
 
+
 router.post("/login", async (req, res) => {
 	const { email, password } = req.body;
 	try {
 		await authService.login(email, password, res);
 	} catch (error) {
 		logger.error("Login error caught in router: ", error.message);
+		res
+			.status(500)
+			.json({ message: "Internal Server Error", error: error.message });
 	}
 });
 
-router.post("/login/volunteer", async (req, res) => {
-	const { email, password } = req.body;
-	try {
-		await authService.loginVolunteer(email, password, res);
-	} catch (error) {
-		logger.error("Login error caught in router: ", error.message);
-	}
-});
+
 
 router.post("/logout", authService.logout);
 router.post("/login-admin", authService.loginAdmin);

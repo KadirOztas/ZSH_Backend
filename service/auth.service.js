@@ -1,10 +1,10 @@
 import { User } from "../model/user.model.js";
+import { v4 as uuidv4 } from "uuid";
 import { Volunteer } from "../model/volunteer.model.js";
-import jwt from "jsonwebtoken";
-
-import config from "../config/auth.config.js";
 import logger from "../config/log.config.js";
 import { generateToken } from "../utility/auth.utility.js";
+import bcrypt from "bcrypt";
+import { DuplicateEmailError, ValidationError } from "../config/error.js";
 
 const register = async ({
 	email,
@@ -16,11 +16,20 @@ const register = async ({
 }) => {
 	logger.info(`Registering user... in service ${email}`);
 	try {
+		const existingUser = await User.findOne({ where: { email } });
+		if (existingUser) {
+			throw new DuplicateEmailError("Email already in use");
+		}
+
+		// Hash the password before saving
+		const hashedPassword = await bcrypt.hash(password, 10);
+
 		const user = await User.create({
+			id: uuidv4(),
 			email,
 			firstname,
 			lastname,
-			password,
+			password: hashedPassword,
 			role: "user",
 			kanton,
 			language,
@@ -31,8 +40,12 @@ const register = async ({
 		logger.info(`User is registered ${email}`);
 		return user;
 	} catch (error) {
+		if (error instanceof DuplicateEmailError) {
+			logger.error(`Duplicate email error: ${error.message}`);
+			throw error;
+		}
 		logger.error(`Error creating user... ${error.message}`);
-		throw new Error("Error creating user");
+		throw new ValidationError("Error creating user");
 	}
 };
 
@@ -48,11 +61,18 @@ const registerVolunteer = async ({
 }) => {
 	logger.info(`Registering volunteer... in service ${email}`);
 	try {
+		const existingVolunteer = await Volunteer.findOne({ where: { email } });
+		if (existingVolunteer) {
+			throw new DuplicateEmailError("Email already in use");
+		}
+
+		const hashedPassword = await bcrypt.hash(password, 10);
+
 		const volunteer = await Volunteer.create({
 			firstname,
 			lastname,
 			email,
-			password,
+			password: hashedPassword,
 			role: "volunteer",
 			kanton,
 			phone,
@@ -65,21 +85,39 @@ const registerVolunteer = async ({
 		logger.info(`Volunteer registered successfully ${email}`);
 		return volunteer;
 	} catch (error) {
-		logger.error(`Error registering volunteer... ${error.message}`);
-		throw new Error("Error registering volunteer");
+		if (error instanceof DuplicateEmailError) {
+			logger.error(`Duplicate email error: ${error.message}`);
+			throw error;
+		}
+		logger.error(`Error registering volunteer... ${error.stack}`);
+		throw new ValidationError("Error registering volunteer");
 	}
 };
 
 const login = async (email, password, res) => {
-	logger.info(`Attempting to log in user: ${email}`);
+	logger.info(`Attempting to log in user or volunteer: ${email}`);
 	try {
-		const user = await User.findOne({
-			where: { email: email, password: password },
-		});
+		let user = await User.findOne({ where: { email } });
+		let userType = "user";
+
+		if (!user) {
+			user = await Volunteer.findOne({ where: { email } });
+			userType = "volunteer";
+		}
 
 		if (!user) {
 			throw new Error("User not found");
 		}
+
+		logger.info(`User found: ${user.email}, comparing passwords...`);
+
+		const isPasswordValid = await bcrypt.compare(password, user.password);
+		if (!isPasswordValid) {
+			logger.error("Invalid password entered");
+			throw new Error("Invalid password");
+		}
+
+		logger.info("Password is valid, generating token...");
 
 		const token = generateToken(user);
 		res.cookie("accessToken", token, {
@@ -87,40 +125,20 @@ const login = async (email, password, res) => {
 			secure: process.env.NODE_ENV === "production",
 			httpOnly: true,
 		});
-		res.status(200).json({ token, user });
-	} catch (error) {
-		logger.error("Login error: ", error);
-		res
-			.status(500)
-			.json({ message: "Internal Server Error", error: error.message });
-	}
-};
 
-const loginVolunteer = async (email, password, res) => {
-	logger.info(`Attempting to log in volunteer: ${email}`);
-	try {
-		const volunteer = await Volunteer.findOne({
-			where: { email: email, password: password },
-		});
-
-		if (!volunteer) {
-			throw new Error("Volunteer not found");
+		if (userType === "user") {
+			res.status(200).json({ token, user });
+		} else {
+			res.status(200).json({ token, volunteer: user });
 		}
-
-		const token = generateToken(volunteer);
-		res.cookie("accessToken", token, {
-			maxAge: 3 * 60 * 60 * 1000,
-			secure: process.env.NODE_ENV === "production",
-			httpOnly: true,
-		});
-		res.status(200).json({ token, volunteer });
 	} catch (error) {
 		logger.error("Login error: ", error);
 		res
-			.status(500)
-			.json({ message: "Internal Server Error", error: error.message });
+			.status(401)
+			.json({ message: "Invalid email or password", error: error.message });
 	}
 };
+
 
 const logout = async (req, res, next) => {
 	try {
@@ -149,6 +167,8 @@ const loginAdmin = async (req, res) => {
 
 		res.cookie("accessToken", token, {
 			maxAge: 86400 * 1000,
+			secure: process.env.NODE_ENV === "production",
+			httpOnly: true,
 		});
 
 		res.json({ message: "Admin login successful", accessToken: token });
@@ -157,11 +177,11 @@ const loginAdmin = async (req, res) => {
 	}
 };
 
+
 export default {
 	register,
 	login,
 	loginAdmin,
 	logout,
 	registerVolunteer,
-	loginVolunteer,
 };

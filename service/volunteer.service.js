@@ -1,5 +1,6 @@
 import { allVolunteers } from "../data/volunteers.js";
 import { Volunteer } from "../model/volunteer.model.js";
+import bcrypt from "bcrypt";
 
 const VolunteerService = {
 	async getAllVolunteers() {
@@ -10,19 +11,34 @@ const VolunteerService = {
 			throw new Error("Error while fetching volunteers: " + error.message);
 		}
 	},
-	async getVolunteersByKanton(kanton) {
-    try {
-        console.log("Fetching volunteers for kanton: ", kanton);
-        const volunteers = await Volunteer.findAll({
-            where: { kanton: kanton },
-        });
-        console.log("Found volunteers: ", volunteers); 
-        return volunteers;
-    } catch (error) {
-        console.error("Error while fetching volunteers by kanton: ", error.message);
-        throw new Error("Error while fetching volunteers by kanton: " + error.message);
-    }
-},
+	async getVolunteersByKanton(kanton, limit) {
+		try {
+			console.log("Fetching volunteers for kanton: ", kanton);
+			const volunteers = await Volunteer.findAll({
+				where: { kanton: kanton },
+				limit: limit,
+				attributes: [
+					"firstname",
+					"lastname",
+					"kanton",
+					"language",
+					"isAvailable",
+					"phone",
+					"id",
+				],
+			});
+			console.log("Found volunteers: ", volunteers);
+			return volunteers;
+		} catch (error) {
+			console.error(
+				"Error while fetching volunteers by kanton: ",
+				error.message
+			);
+			throw new Error(
+				"Error while fetching volunteers by kanton: " + error.message
+			);
+		}
+	},
 
 	async createVolunteer(data) {
 		try {
@@ -45,23 +61,32 @@ const VolunteerService = {
 		}
 	},
 
-	async updateVolunteer(id, data) {
+	async updateVolunteerAvailability(userId, volunteerId, isAvailable) {
 		try {
-			const volunteer = await Volunteer.findByPk(id);
+			const volunteer = await Volunteer.findByPk(volunteerId);
 			if (!volunteer) {
 				throw new Error("Volunteer not found");
 			}
-			await volunteer.update(data);
+			if (volunteer.id !== userId) {
+				throw new Error("Unauthorized to change this data");
+			}
+			await volunteer.update({ isAvailable });
 			return volunteer;
 		} catch (error) {
-			throw new Error("Error while updating volunteer: " + error.message);
+			throw new Error(
+				"Error updating volunteer availability: " + error.message
+			);
 		}
 	},
-	async updateVolunteerAvailability(id, isAvailable) {
+
+	async updateVolunteerAvailability(userId, volunteerId, isAvailable) {
 		try {
-			const volunteer = await Volunteer.findByPk(id);
+			const volunteer = await Volunteer.findByPk(volunteerId);
 			if (!volunteer) {
 				throw new Error("Volunteer not found");
+			}
+			if (volunteer.id !== userId) {
+				throw new Error("Unauthorized to change this data");
 			}
 			await volunteer.update({ isAvailable });
 			return volunteer;
@@ -84,22 +109,25 @@ const VolunteerService = {
 		}
 	},
 };
+
 const populateVolunteers = async () => {
 	try {
 		for (const kantonData of allVolunteers) {
 			const { kanton, volunteers } = kantonData;
 
 			for (const volunteerData of volunteers) {
+				const hashedPassword = await bcrypt.hash(volunteerData.password, 10);
+
 				await Volunteer.create({
 					firstname: volunteerData.firstname,
 					lastname: volunteerData.lastname,
 					email: volunteerData.email,
-					password: volunteerData.password,
+					password: hashedPassword,
 					role: volunteerData.role,
 					kanton: kanton,
 					phone: volunteerData.phone,
 					isAvailable: volunteerData.isAvailable,
-					language:volunteerData.language
+					language: volunteerData.language,
 				});
 			}
 		}

@@ -1,9 +1,15 @@
 import sequelize from "../config/database.config.js";
 import { DataTypes } from "sequelize";
+import { v4 as uuidv4 } from "uuid";
 
 const Volunteer = sequelize.define(
 	"Volunteer",
 	{
+		id: {
+			type: DataTypes.UUID,
+			defaultValue: DataTypes.UUIDV4,
+			primaryKey: true,
+		},
 		firstname: {
 			type: DataTypes.STRING,
 			allowNull: false,

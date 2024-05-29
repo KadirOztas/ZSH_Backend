@@ -5,7 +5,11 @@ import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { fileURLToPath } from "url";
-
+import {
+	ValidationError,
+	DuplicateEmailError,
+	PasswordResetError,
+} from "./config/error.js"
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -43,11 +47,20 @@ app.use("/volunteer-availability", volunteerRouter);
 import { router as authRouter } from "./router/auth.router.js";
 import logger from "./config/log.config.js";
 app.use("/auth", authRouter);
+import { router as resetPasswordRouter } from "./router/resetPassword.router.js"
+app.use("/password", resetPasswordRouter);
 
 app.use((err, req, res, next) => {
-	console.error(err.stack); // Log the error stack trace
-	res.status(500).send("Something broke!"); // Send a generic error response
+
+	if (err instanceof ValidationError || err instanceof PasswordResetError) {
+		res.status(400).json({ message: err.message });
+	} else if (err instanceof DuplicateEmailError) {
+		res.status(409).json({ message: err.message });
+	} else {
+		res.status(500).json({ message: "Something broke!" });
+	}
 });
+
 app.get("*", (req, res) => {
 	res.sendFile(path.join(__dirname, "public", "index.html"));
 });

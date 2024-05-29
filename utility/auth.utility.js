@@ -18,7 +18,8 @@ const generateToken = (user) => {
 };
 
 const verifyToken = (req, res, next) => {
-	const token = req.cookies?.accessToken
+	const token =
+		req.cookies?.accessToken || req.headers["authorization"]?.split(" ")[1];
 
 	if (!token) {
 		logger.error("No token provided!");
@@ -32,13 +33,18 @@ const verifyToken = (req, res, next) => {
 		}
 
 		req.user = decoded;
-		logger.info("User is authorized", req.user.username);
+		logger.info("User is authorized", req.user.email);
 		next();
 	});
 };
 
+const verifyRole = (roles) => {
+	return (req, res, next) => {
+		if (!req.user || !roles.includes(req.user.role)) {
+			return res.status(403).send({ message: "Forbidden: Insufficient role" });
+		}
+		next();
+	};
+};
 
-
-
-
-export {verifyToken, generateToken}
+export {verifyToken, generateToken, verifyRole}
