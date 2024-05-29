@@ -124,6 +124,7 @@ const login = async (email, password, res) => {
 			maxAge: 3 * 60 * 60 * 1000,
 			secure: process.env.NODE_ENV === "production",
 			httpOnly: true,
+			sameSite: "None",
 		});
 
 		if (userType === "user") {
