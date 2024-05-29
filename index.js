@@ -51,7 +51,6 @@ import { router as resetPasswordRouter } from "./router/resetPassword.router.js"
 app.use("/password", resetPasswordRouter);
 
 app.use((err, req, res, next) => {
-	console.error(err.stack); // Log the error stack trace
 
 	if (err instanceof ValidationError || err instanceof PasswordResetError) {
 		res.status(400).json({ message: err.message });

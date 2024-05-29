@@ -54,7 +54,7 @@ router.get("/kanton/:kanton", limiter, async (req, res) => {
 		}));
 		res.json(filteredVolunteers);
 	} catch (error) {
-		logger.error("Error fetching volunteers by kanton", error);
+		console.error("Error fetching volunteers by kanton:", error);
 		res.status(500).json({ error: error.message });
 	}
 });

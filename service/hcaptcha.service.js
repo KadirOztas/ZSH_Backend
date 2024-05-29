@@ -2,6 +2,7 @@ import axios from "axios";
 
 const verifyHCaptcha = async (token) => {
 	try {
+		console.log("Verifying hCaptcha token:", token);
 		const response = await axios.post(
 			`https://api.hcaptcha.com/siteverify`,
 			`secret=${process.env.HCAPTCHA_SECRET_KEY}&response=${token}`,
@@ -16,6 +17,5 @@ const verifyHCaptcha = async (token) => {
 		return false;
 	}
 };
-
 
 export { verifyHCaptcha };

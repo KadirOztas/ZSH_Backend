@@ -69,7 +69,6 @@ const registerVolunteer = async ({
 		const hashedPassword = await bcrypt.hash(password, 10);
 
 		const volunteer = await Volunteer.create({
-			id: uuidv4(),
 			firstname,
 			lastname,
 			email,
@@ -90,7 +89,7 @@ const registerVolunteer = async ({
 			logger.error(`Duplicate email error: ${error.message}`);
 			throw error;
 		}
-		logger.error(`Error registering volunteer... ${error.message}`);
+		logger.error(`Error registering volunteer... ${error.stack}`);
 		throw new ValidationError("Error registering volunteer");
 	}
 };

@@ -20,9 +20,11 @@ router.post("/register", async (req, res, next) => {
 });
 
 router.post("/register/volunteer", async (req, res, next) => {
+	console.log("Request body:", req.body);
 	logger.info("Registering volunteer...", req.body.email);
 	const volunteer = req.body;
 	try {
+		 console.log("Request body:", req.body);
 		const registeredVolunteer = await authService.registerVolunteer(volunteer);
 		logger.info("Volunteer has registered successfully", req.body.email);
 		res.json({ message: "Register", volunteer: registeredVolunteer });

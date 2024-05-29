@@ -7,7 +7,7 @@ const Volunteer = sequelize.define(
 	{
 		id: {
 			type: DataTypes.UUID,
-			defaultValue: uuidv4,
+			defaultValue: DataTypes.UUIDV4,
 			primaryKey: true,
 		},
 		firstname: {
