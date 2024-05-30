@@ -124,7 +124,6 @@ const login = async (email, password, res) => {
 			maxAge: 3 * 60 * 60 * 1000,
 			secure: process.env.NODE_ENV === "production",
 			httpOnly: true,
-			sameSite: "None",
 		});
 
 		if (userType === "user") {
@@ -139,7 +138,6 @@ const login = async (email, password, res) => {
 			.json({ message: "Invalid email or password", error: error.message });
 	}
 };
-
 
 const logout = async (req, res, next) => {
 	try {
@@ -177,7 +175,6 @@ const loginAdmin = async (req, res) => {
 		res.status(401).send({ message: "Invalid credentials" });
 	}
 };
-
 
 export default {
 	register,

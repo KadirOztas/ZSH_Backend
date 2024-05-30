@@ -1,6 +1,5 @@
 import sequelize from "../config/database.config.js";
 import { DataTypes } from "sequelize";
-import { v4 as uuidv4 } from "uuid";
 
 const Volunteer = sequelize.define(
 	"Volunteer",

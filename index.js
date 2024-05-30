@@ -9,14 +9,15 @@ import {
 	ValidationError,
 	DuplicateEmailError,
 	PasswordResetError,
-} from "./config/error.js"
+} from "./config/error.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 const app = express();
 const local_url = process.env.CORS_LOCAL_URL;
 const deployment_url = process.env.CORS_DEPLOYMENT_URL;
-const allowedOrigins=[local_url, deployment_url]
+const allowedOrigins = [local_url, deployment_url];
+
 app.use(
 	cors({
 		origin: function (origin, callback) {
@@ -47,11 +48,11 @@ app.use("/volunteer-availability", volunteerRouter);
 import { router as authRouter } from "./router/auth.router.js";
 import logger from "./config/log.config.js";
 app.use("/auth", authRouter);
-import { router as resetPasswordRouter } from "./router/resetPassword.router.js"
+import { router as resetPasswordRouter } from "./router/resetPassword.router.js";
+
 app.use("/password", resetPasswordRouter);
 
 app.use((err, req, res, next) => {
-
 	if (err instanceof ValidationError || err instanceof PasswordResetError) {
 		res.status(400).json({ message: err.message });
 	} else if (err instanceof DuplicateEmailError) {
@@ -69,7 +70,7 @@ process.on("uncaughtException", (err) => {
 	process.exit(0);
 });
 
-const PORT = process.env.SERVER_PORT || 3000;
+const PORT = process.env.SERVER_PORT;
 app.listen(PORT, () => {
 	logger.info(`Server is running on port ${PORT}`);
 });

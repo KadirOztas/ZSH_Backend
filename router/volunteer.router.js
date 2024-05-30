@@ -81,7 +81,7 @@ router.post("/", verifyToken, verifyRole(["admin"]), async (req, res) => {
 router.put(
 	"/availability/:id",
 	verifyToken,
-	verifyRole(["volunteer"]),
+	verifyRole(["admin", "volunteer"]),
 	async (req, res) => {
 		const userId = req.user.id;
 		const userRole = req.user.role;

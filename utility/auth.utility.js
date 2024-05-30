@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 import config from "../config/auth.config.js";
 import logger from "../config/log.config.js";
 
-
 const generateToken = (user) => {
 	const payload = {
 		id: user.id,
@@ -47,4 +46,4 @@ const verifyRole = (roles) => {
 	};
 };
 
-export {verifyToken, generateToken, verifyRole}
+export { verifyToken, generateToken, verifyRole };
