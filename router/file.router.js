@@ -5,6 +5,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { verifyToken } from "../utility/auth.utility.js";
 import { upload } from "../service/file.service.js";
+import { log } from "console";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,6 +23,7 @@ kantons.forEach((kanton) => {
 			console.log(
 				`File upload request received for kanton: ${req.params.kanton}`
 			);
+			console.log(`Request ${JSON.stringify(req)}`);
 			if (!req.file) {
 				console.log("No file was uploaded.");
 				return res.status(400).json({ message: "No files were uploaded." });
