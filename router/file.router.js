@@ -23,7 +23,9 @@ kantons.forEach((kanton) => {
 			console.log(
 				`File upload request received for kanton: ${req.params.kanton}`
 			);
-			console.log(`Request ${JSON.stringify(req)}`);
+			console.log(`Request ${JSON.stringify(Object.keys(req))}`);
+			console.log("File",req.file);
+			console.log("Files", req.files);
 			if (!req.file) {
 				console.log("No file was uploaded.");
 				return res.status(400).json({ message: "No files were uploaded." });
