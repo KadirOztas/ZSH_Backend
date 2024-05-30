@@ -16,4 +16,4 @@ router.post("/reset-password", async (req, res, next) => {
 	}
 });
 
-export {router}
+export { router };

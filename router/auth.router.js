@@ -2,7 +2,6 @@ import express from "express";
 import authService from "../service/auth.service.js";
 import sendEmail from "../service/email.service.js";
 import logger from "../config/log.config.js";
-import { verifyRole } from "../utility/auth.utility.js";
 
 const router = express.Router();
 
@@ -24,7 +23,7 @@ router.post("/register/volunteer", async (req, res, next) => {
 	logger.info("Registering volunteer...", req.body.email);
 	const volunteer = req.body;
 	try {
-		 console.log("Request body:", req.body);
+		console.log("Request body:", req.body);
 		const registeredVolunteer = await authService.registerVolunteer(volunteer);
 		logger.info("Volunteer has registered successfully", req.body.email);
 		res.json({ message: "Register", volunteer: registeredVolunteer });
@@ -46,7 +45,6 @@ router.post("/send-welcome-email", async (req, res) => {
 	}
 });
 
-
 router.post("/login", async (req, res) => {
 	const { email, password } = req.body;
 	try {
@@ -59,9 +57,8 @@ router.post("/login", async (req, res) => {
 	}
 });
 
-
-
 router.post("/logout", authService.logout);
+
 router.post("/login-admin", authService.loginAdmin);
 
 export { router };

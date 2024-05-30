@@ -22,4 +22,4 @@ const languageOptions = {
 	uk: "Українська",
 	zh: "简体中文",
 };
-export default languageOptions
+export default languageOptions;
