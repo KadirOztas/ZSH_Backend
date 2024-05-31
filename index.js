@@ -10,6 +10,7 @@ import {
 	DuplicateEmailError,
 	PasswordResetError,
 } from "./config/error.js";
+import "./service/cron.service.js"
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,7 +18,7 @@ const app = express();
 const local_url = process.env.CORS_LOCAL_URL;
 const deployment_url = process.env.CORS_DEPLOYMENT_URL;
 const allowedOrigins = [local_url, deployment_url];
-
+console.log("Allowed origins:", allowedOrigins);
 app.use(
 	cors({
 		origin: function (origin, callback) {
@@ -32,6 +33,32 @@ app.use(
 		credentials: true,
 	})
 );
+
+app.options(
+	"*",
+	cors({
+		origin: function (origin, callback) {
+			if (!origin) return callback(null, true);
+			if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+				callback(null, true);
+			} else {
+				callback(new Error("Not allowed by CORS"));
+			}
+		},
+		credentials: true,
+	})
+);
+app.use((err, req, res, next) => {
+	console.error(err.stack); // Hata yığını çıktısı
+	if (err instanceof ValidationError || err instanceof PasswordResetError) {
+		res.status(400).json({ message: err.message });
+	} else if (err instanceof DuplicateEmailError) {
+		res.status(409).json({ message: err.message });
+	} else {
+		res.status(500).json({ message: "Something broke!" });
+	}
+});
+
 app.use(morgan(process.env.ACCESS_LOG_FORMAT));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
